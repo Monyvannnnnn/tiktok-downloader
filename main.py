@@ -51,14 +51,21 @@ async def start_handler(client: pyrogram.Client, message: pyrogram.types.Message
             }
             await database.execute(query=query, values=values)
     msgid = message.id
-    retext = f"""Welcome {full_name} to Tiktok Video Downloader Bot
+    retext = f"""✨ **Welcome, {full_name}!**
 
-How to use :
+📥 **TikTok Video & Photo Downloader Bot**
 
-KH : របៀបប្រើប្រាស់ bot គឺដោយផ្ញាត់តំណភ្ជាប់ពីវីដេូតីកុដដែលអ្នកចង់ទាញយក។
+I can help you download TikTok videos (without watermark) and photo slideshows fast and easily!
 
-EN : How to use the bot by simply sending the link of the tiktok video you want to download.
-    """
+💡 **How to use:**
+Simply send me any TikTok video or photo link!
+
+⚡ **Features:**
+• No Watermark Videos
+• Photo Slideshow Albums
+• Fast & HD Quality
+
+Send a link now to try it out! 🚀"""
     await client.send_message(chat_id=userid, text=retext, reply_to_message_id=msgid)
     return
 
