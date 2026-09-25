@@ -139,7 +139,7 @@ async def tiktok_handler(client: pyrogram.Client, message: pyrogram.types.Messag
     retext = f"Successfully download the video\n"
     if link_length > 40:
         retext += f"\n{source_link}\n"
-    retext += "\nPowered by @TiktokVideoDownloaderIDBot"
+    retext += "\nPowered by @thescrollsaver_bot"
     keylist = [
         [
             pyrogram.types.InlineKeyboardButton(text="Source Video", url=tiktok_url),
@@ -177,7 +177,7 @@ async def tiktok_handler(client: pyrogram.Client, message: pyrogram.types.Messag
         caption_text = f"Successfully downloaded {len(images)} photo(s)\n"
         if link_length > 40:
             caption_text += f"\n{source_link}\n"
-        caption_text += "\nPowered by @TiktokVideoDownloaderIDBot"
+        caption_text += "\nPowered by @thescrollsaver_bot"
 
         if len(images) == 1:
             img_url = images[0]
