@@ -232,8 +232,25 @@ USDT (TON) : `UQDicJd7KwBcxzqbn6agUc_KVl8BklzyvuKGxEVG7xuhnTFt`
     return
 
 
+import os
+
+
+async def handle_health_check(reader, writer):
+    writer.write(b"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 15\r\n\r\nBot is running!")
+    await writer.drain()
+    writer.close()
+    await writer.wait_closed()
+
+
 async def main():
     print(f"start bot !")
+    port = int(os.environ.get("PORT", 8080))
+    try:
+        await asyncio.start_server(handle_health_check, "0.0.0.0", port)
+        print(f"HTTP health server started on port {port}")
+    except Exception as e:
+        print(f"Port binding note: {e}")
+
     try:
         db_engine = sqlalchemy.create_engine(DATABASE.replace("+aiomysql", "").replace("+aiosqlite", ""))
         metadata.create_all(db_engine)
