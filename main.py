@@ -160,6 +160,57 @@ async def tiktok_handler(client: pyrogram.Client, message: pyrogram.types.Messag
                 chat_id=userid, file_id=file_id, caption=retext, reply_markup=rekey
             )
             return
+    if images and len(images) > 0:
+        log_activity(f"Downloading photo slideshow ({len(images)} images)...")
+        try:
+            await client.delete_messages(chat_id=userid, message_ids=msgid)
+        except Exception:
+            pass
+
+        caption_text = f"Successfully downloaded {len(images)} photo(s)\n"
+        if link_length > 40:
+            caption_text += f"\n{source_link}\n"
+        caption_text += "\nPowered by @TiktokVideoDownloaderIDBot"
+
+        # Try sending direct image URLs first
+        media_group = []
+        for i, img_url in enumerate(images[:10]):
+            if i == 0:
+                media_group.append(pyrogram.types.InputMediaPhoto(media=img_url, caption=caption_text))
+            else:
+                media_group.append(pyrogram.types.InputMediaPhoto(media=img_url))
+
+        try:
+            await client.send_media_group(chat_id=userid, media=media_group)
+            return
+        except Exception as e:
+            log_activity(f"Direct image URL media group notice: {e}, downloading images locally...")
+            local_files = []
+            try:
+                for idx, img_url in enumerate(images[:10]):
+                    img_path = cwd.joinpath(f"{video_id}_{idx}.jpg")
+                    try:
+                        await tiktok_downloader.get_content(url=img_url, output=str(img_path))
+                        if img_path.exists() and img_path.stat().st_size > 0:
+                            local_files.append(img_path)
+                    except Exception as err:
+                        log_activity(f"Failed to download image {idx}: {err}")
+
+                if local_files:
+                    local_media_group = []
+                    for idx, img_path in enumerate(local_files):
+                        if idx == 0:
+                            local_media_group.append(pyrogram.types.InputMediaPhoto(media=str(img_path), caption=caption_text))
+                        else:
+                            local_media_group.append(pyrogram.types.InputMediaPhoto(media=str(img_path)))
+                    await client.send_media_group(chat_id=userid, media=local_media_group)
+                    return
+            except Exception as ex:
+                log_activity(f"Local image download error: {ex}")
+            finally:
+                for f in local_files:
+                    f.unlink(missing_ok=True)
+
     now = int(datetime.now(timezone.utc).timestamp())
     output = cwd.joinpath(f"{video_id}.mp4")
     dl_success = False

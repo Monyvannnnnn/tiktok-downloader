@@ -66,13 +66,21 @@ async def get_video_detail(url: str):
                         video_id = item.get("id")
                         author = item.get("author", {})
                         video = item.get("video", {})
-                        image_post = item.get("imagePost", {})
+                        raw_images = image_post.get("images") or []
+                        cleaned_images = []
+                        for img in raw_images:
+                            if isinstance(img, str):
+                                cleaned_images.append(img)
+                            elif isinstance(img, dict):
+                                u = img.get("imageURL", {}).get("urlList", [None])[0] or img.get("displayAddr")
+                                if u:
+                                    cleaned_images.append(u)
                         return (
                             video_id,
                             author.get("id"),
                             author.get("uniqueId"),
                             video.get("playAddr"),
-                            image_post.get("images"),
+                            cleaned_images if cleaned_images else None,
                             cookies,
                         )
                 except Exception as e:
