@@ -1,0 +1,13 @@
+services:
+  - type: worker
+    name: tiktok-downloader-bot
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python main.py
+    envVars:
+      - key: token_bot
+        sync: false
+      - key: api_id
+        sync: false
+      - key: api_hash
+        sync: false

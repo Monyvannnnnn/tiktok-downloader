@@ -1,10 +1,12 @@
+import asyncio
 import utils
 import pathlib
 import pyrogram
 import databases
+import sqlalchemy
 import tiktok_downloader
 from load import *
-from models import users, videos
+from models import users, videos, metadata
 from datetime import datetime, timezone
 
 cwd = pathlib.Path(__file__).parent
@@ -15,12 +17,14 @@ bot = pyrogram.Client(
 
 
 async def start_handler(client: pyrogram.Client, message: pyrogram.types.Message):
-    first_name = message.chat.first_name
-    username = message.chat.username
-    last_name = message.chat.last_name
-    userid = message.chat.id
+    user = message.from_user or message.chat
+    first_name = user.first_name or ""
+    last_name = user.last_name or ""
+    username = user.username
+    full_name = f"{first_name} {last_name}".strip() if last_name else first_name
+    userid = user.id
     text = message.text
-    print(f"{userid} {first_name} - {text}")
+    print(f"{userid} {full_name} - {text}")
     query = "SELECT * FROM users WHERE user_id = :userid"
     values = {"userid": userid}
     async with databases.Database(DATABASE) as database:
@@ -32,18 +36,15 @@ async def start_handler(client: pyrogram.Client, message: pyrogram.types.Message
                 "first_name": first_name,
                 "last_name": last_name,
                 "username": username,
-                "created_at": datetime.now(tz=timezone.utc)
-                .now()
-                .isoformat()
-                .split(".")[0],
+                "created_at": datetime.now(timezone.utc).replace(microsecond=0),
             }
             await database.execute(query=query, values=values)
     msgid = message.id
-    retext = f"""Welcome {first_name} to Tiktok Video Downloader Bot
+    retext = f"""Welcome {full_name} to Tiktok Video Downloader Bot
 
 How to use :
 
-ID : Cara menggunakan bot hanya dengan mengirimkan tautan dari video tiktok yang ingin kamu unduh.
+KH : របៀបប្រើប្រាស់ bot គឺដោយផ្ញាត់តំណភ្ជាប់ពីវីដេូតីកុដដែលអ្នកចង់ទាញយក។
 
 EN : How to use the bot by simply sending the link of the tiktok video you want to download.
     """
@@ -52,10 +53,13 @@ EN : How to use the bot by simply sending the link of the tiktok video you want 
 
 
 async def ping_handler(client: pyrogram.Client, message: pyrogram.types.Message):
-    userid = message.chat.id
-    first_name = message.chat.first_name or ""
+    user = message.from_user or message.chat
+    first_name = user.first_name or ""
+    last_name = user.last_name or ""
+    full_name = f"{first_name} {last_name}".strip() if last_name else first_name
+    userid = user.id
     msg_id = message.id
-    print(f"{userid} {first_name} - /ping")
+    print(f"{userid} {full_name} - /ping")
     result = await client.send_message(
         chat_id=userid, text="Pong!", reply_to_message_id=msg_id
     )
@@ -65,13 +69,15 @@ async def ping_handler(client: pyrogram.Client, message: pyrogram.types.Message)
 
 
 async def tiktok_handler(client: pyrogram.Client, message: pyrogram.types.Message):
-    userid = message.chat.id
-    first_name = message.chat.first_name or ""
-    last_name = message.chat.last_name
-    username = message.chat.username
+    user = message.from_user or message.chat
+    first_name = user.first_name or ""
+    last_name = user.last_name or ""
+    username = user.username
+    full_name = f"{first_name} {last_name}".strip() if last_name else first_name
+    userid = user.id
     text = message.text
     msgid = message.id
-    print(f"{userid} {first_name} - {text}")
+    print(f"{userid} {full_name} - {text}")
     query = "SELECT * FROM users WHERE user_id = :userid"
     values = {"userid": userid}
     async with databases.Database(DATABASE) as database:
@@ -83,10 +89,7 @@ async def tiktok_handler(client: pyrogram.Client, message: pyrogram.types.Messag
                 "first_name": first_name,
                 "last_name": last_name,
                 "username": username,
-                "created_at": datetime.now(tz=timezone.utc)
-                .now()
-                .isoformat()
-                .split(".")[0],
+                "created_at": datetime.now(timezone.utc).replace(microsecond=0),
             }
             await database.execute(query=query, values=values)
     tiktok_url = None
@@ -123,17 +126,7 @@ async def tiktok_handler(client: pyrogram.Client, message: pyrogram.types.Messag
         [
             pyrogram.types.InlineKeyboardButton(text="Source Video", url=tiktok_url),
         ],
-        [
-            pyrogram.types.InlineKeyboardButton(
-                text="Follow Me", url="https://t.me/fawwazthoerif"
-            ),
-            pyrogram.types.InlineKeyboardButton(
-                text="Donation", callback_data="donation"
-            ),
-        ],
     ]
-    if link_length > 40:
-        keylist.pop(0)
     rekey = pyrogram.types.InlineKeyboardMarkup(inline_keyboard=keylist)
     async with databases.Database(DATABASE) as database:
         query = (
@@ -148,44 +141,63 @@ async def tiktok_handler(client: pyrogram.Client, message: pyrogram.types.Messag
             print("using cache database !")
             file_id = result.file_id
             file_unique_id = result.file_unique_id
-            await client.delete_messages(chat_id=userid, message_ids=msgid)
+            try:
+                await client.delete_messages(chat_id=userid, message_ids=msgid)
+            except Exception:
+                pass
             await client.send_cached_media(
                 chat_id=userid, file_id=file_id, caption=retext, reply_markup=rekey
             )
             return
-    now = int(datetime.now(tz=timezone.utc).timestamp())
+    now = int(datetime.now(timezone.utc).timestamp())
     output = cwd.joinpath(f"{video_id}.mp4")
-    if video_url is None or len(video_url) <= 0:
-        print("try download with musicaldown !")
-        result = await tiktok_downloader.musicaldown(url=tiktok_url, output=output)
-    else:
+    dl_success = False
+    if video_url and len(video_url) > 0:
         print("try download with main tiktok")
-        result = await tiktok_downloader.get_content(
-            url=video_url, output=output, cookies=cookies
-        )
-    await client.delete_messages(chat_id=userid, message_ids=msgid)
+        try:
+            await tiktok_downloader.get_content(
+                url=video_url, output=str(output), cookies=cookies
+            )
+            dl_success = output.exists() and output.stat().st_size > 0
+        except Exception as e:
+            print(f"main tiktok download error: {e}")
+
+    if not dl_success:
+        print("try download with musicaldown !")
+        dl_success = await tiktok_downloader.musicaldown(url=tiktok_url, output=str(output))
+
+    if not dl_success or not output.exists() or output.stat().st_size == 0:
+        retext = "Failed to download video. Please try again or provide another link."
+        await client.send_message(chat_id=userid, text=retext, reply_to_message_id=msgid)
+        return
+
+    try:
+        await client.delete_messages(chat_id=userid, message_ids=msgid)
+    except Exception:
+        pass
+
     result = await client.send_video(
-        chat_id=userid, video=output, caption=retext, reply_markup=rekey
+        chat_id=userid, video=str(output), caption=retext, reply_markup=rekey
     )
-    video = result.video
-    animation = result.animation
-    if video is not None:
-        file_id = result.video.file_id
-        file_unique_id = result.video.file_unique_id
-    if animation is not None:
-        file_id = result.animation.file_id
-        file_unique_id = result.animation.file_unique_id
-    async with databases.Database(DATABASE) as database:
-        query = videos.insert()
-        values = {
-            "author_id": author_id,
-            "author_username": author_username,
-            "video_id": video_id,
-            "file_id": file_id,
-            "file_unique_id": file_unique_id,
-            "created_at": datetime.now(tz=timezone.utc).now().isoformat().split(".")[0],
-        }
-        await database.execute(query=query, values=values)
+    file_id = None
+    file_unique_id = None
+    media = getattr(result, "video", None) or getattr(result, "animation", None) or getattr(result, "document", None)
+    if media:
+        file_id = media.file_id
+        file_unique_id = media.file_unique_id
+
+    if file_id and file_unique_id:
+        async with databases.Database(DATABASE) as database:
+            query = videos.insert()
+            values = {
+                "author_id": author_id,
+                "author_username": author_username,
+                "video_id": video_id,
+                "file_id": file_id,
+                "file_unique_id": file_unique_id,
+                "created_at": datetime.now(timezone.utc).replace(microsecond=0),
+            }
+            await database.execute(query=query, values=values)
     output.unlink(missing_ok=True)
     return
 
@@ -195,14 +207,17 @@ async def donation_handler(
     message: pyrogram.types.Message | pyrogram.types.CallbackQuery,
 ):
     if isinstance(message, pyrogram.types.Message):
-        userid = message.chat.id
-        first_name = message.chat.first_name
+        user = message.from_user or message.chat
+        userid = user.id
         text = message.text
     if isinstance(message, pyrogram.types.CallbackQuery):
-        userid = message.from_user.id
-        first_name = message.from_user.first_name
+        user = message.from_user
+        userid = user.id
         text = message.data
-    print(f"{userid} {first_name} - {text}")
+    first_name = user.first_name or ""
+    last_name = user.last_name or ""
+    full_name = f"{first_name} {last_name}".strip() if last_name else first_name
+    print(f"{userid} {full_name} - {text}")
     retext = """If you like my work, you can support me through the link below.
     
 International : https://sociabuzz.com/fawwazthoerif/tribe
@@ -219,6 +234,11 @@ USDT (TON) : `UQDicJd7KwBcxzqbn6agUc_KVl8BklzyvuKGxEVG7xuhnTFt`
 
 async def main():
     print(f"start bot !")
+    try:
+        db_engine = sqlalchemy.create_engine(DATABASE.replace("+aiomysql", "").replace("+aiosqlite", ""))
+        metadata.create_all(db_engine)
+    except Exception as e:
+        print(f"Database table check/creation notice: {e}")
     await bot.start()
     me = await bot.get_me()
     botname = me.first_name
@@ -259,6 +279,5 @@ async def main():
     await bot.stop()
 
 
-import asyncio
-
-bot.run(main())
+if __name__ == "__main__":
+    bot.run(main())

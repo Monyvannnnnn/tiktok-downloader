@@ -6,7 +6,7 @@ users = sqlalchemy.Table(
     "users",
     metadata,
     sqlalchemy.Column(
-        name="id", type_=sqlalchemy.BigInteger, primary_key=True, autoincrement=True
+        name="id", type_=sqlalchemy.Integer, primary_key=True, autoincrement=True
     ),
     sqlalchemy.Column(
         name="user_id",
@@ -14,7 +14,7 @@ users = sqlalchemy.Table(
         unique=True,
     ),
     sqlalchemy.Column(
-        name="first_name", type_=sqlalchemy.String(length=255), index=True
+        name="first_name", type_=sqlalchemy.String(length=255), index=True, nullable=True
     ),
     sqlalchemy.Column(
         name="last_name", type_=sqlalchemy.String(length=255), index=True, nullable=True
@@ -30,7 +30,7 @@ videos = sqlalchemy.Table(
     "videos",
     metadata,
     sqlalchemy.Column(
-        name="id", type_=sqlalchemy.BigInteger, primary_key=True, autoincrement=True
+        name="id", type_=sqlalchemy.Integer, primary_key=True, autoincrement=True
     ),
     sqlalchemy.Column(
         name="author_id", type_=sqlalchemy.VARCHAR(length=255), index=True
