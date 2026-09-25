@@ -53,20 +53,49 @@ async def start_handler(client: pyrogram.Client, message: pyrogram.types.Message
     msgid = message.id
     retext = f"""✨ **Welcome, {full_name}!**
 
-📥 **TikTok Video & Photo Downloader Bot**
+📥 **TikTok & YouTube Video Downloader Bot**
 
-I can help you download TikTok videos (without watermark) and photo slideshows fast and easily!
+I can help you download TikTok videos (without watermark), photo slideshows, and YouTube videos fast and easily!
 
 💡 **How to use:**
-Simply send me any TikTok video or photo link!
+Simply send me any TikTok or YouTube video link!
 
 ⚡ **Features:**
-• No Watermark Videos
+• No Watermark TikTok Videos
 • Photo Slideshow Albums
+• YouTube Video Downloads
 • Fast & HD Quality
 
-Send a link now to try it out! 🚀"""
-    await client.send_message(chat_id=userid, text=retext, reply_to_message_id=msgid)
+Send a link or click a button below to try it out! 🚀"""
+
+    keylist = [
+        [
+            pyrogram.types.InlineKeyboardButton(
+                text="▶️ Download YouTube Video", callback_data="download_youtube"
+            ),
+        ],
+        [
+            pyrogram.types.InlineKeyboardButton(
+                text="🌐 Open YouTube", url="https://www.youtube.com"
+            ),
+        ],
+    ]
+    rekey = pyrogram.types.InlineKeyboardMarkup(inline_keyboard=keylist)
+    await client.send_message(
+        chat_id=userid, text=retext, reply_to_message_id=msgid, reply_markup=rekey
+    )
+    return
+
+
+async def youtube_callback_handler(
+    client: pyrogram.Client, callback_query: pyrogram.types.CallbackQuery
+):
+    user = callback_query.from_user
+    full_name = f"{user.first_name or ''} {user.last_name or ''}".strip()
+    log_activity(f"{user.id} {full_name} - clicked Download YouTube button")
+    await callback_query.answer(
+        "Send any YouTube video link here to download it! 🎬", show_alert=True
+    )
     return
 
 
@@ -537,6 +566,12 @@ async def main():
         handler=pyrogram.handlers.callback_query_handler.CallbackQueryHandler(
             callback=donation_handler,
             filters=pyrogram.filters.regex(r"donation"),
+        )
+    )
+    bot.add_handler(
+        handler=pyrogram.handlers.callback_query_handler.CallbackQueryHandler(
+            callback=youtube_callback_handler,
+            filters=pyrogram.filters.regex(r"download_youtube"),
         )
     )
     await pyrogram.idle()
