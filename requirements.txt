@@ -9,4 +9,3 @@ pyrofork
 python-dotenv
 SQLAlchemy
 tgcrypto
-yt-dlp
