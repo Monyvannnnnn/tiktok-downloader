@@ -1,7 +1,7 @@
 import json
 import time
 import asyncio
-from config import PORT
+from config import PORT, BASE_DIR
 from services.logger import recent_logs, log_activity
 
 START_TIME = time.time()
@@ -26,6 +26,9 @@ async def handle_health_check(reader, writer):
                 f"Content-Length: {len(body)}\r\n\r\n"
             ).encode("utf-8")
             writer.write(header + body)
+            await writer.drain()
+            return
+
         elif "/api/stats" in req_str:
             logs_list = list(recent_logs)
             cache_hits = sum(1 for item in logs_list if "cache database" in item.get("text", "").lower())
@@ -48,13 +51,35 @@ async def handle_health_check(reader, writer):
                 f"Content-Length: {len(body)}\r\n\r\n"
             ).encode("utf-8")
             writer.write(header + body)
-        else:
-            html_content = """<!DOCTYPE html>
+            await writer.drain()
+            return
+
+        elif "/asset/" in req_str:
+            try:
+                filename = req_str.split("/asset/")[1].split(" ")[0].split("?")[0]
+                asset_path = BASE_DIR.joinpath("asset", filename)
+                if asset_path.exists() and asset_path.is_file():
+                    content_type = "image/png" if filename.lower().endswith(".png") else "image/jpeg"
+                    with open(asset_path, "rb") as f:
+                        body = f.read()
+                    header = (
+                        "HTTP/1.1 200 OK\r\n"
+                        f"Content-Type: {content_type}\r\n"
+                        "Access-Control-Allow-Origin: *\r\n"
+                        f"Content-Length: {len(body)}\r\n\r\n"
+                    ).encode("utf-8")
+                    writer.write(header + body)
+                    await writer.drain()
+                    return
+            except Exception as ex:
+                pass
+
+        html_content = """<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ScrollSaver - 3D Isometric Process Map & Workflow Dashboard</title>
+    <title>ScrollSaver - 3D Isometric Workflow with Assets</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -188,7 +213,7 @@ async def handle_health_check(reader, writer):
 
         /* 3D ISOMETRIC CANVAS WRAPPER */
         .iso-map-wrapper {
-            width: 100%; height: 720px; position: relative; border-radius: 20px;
+            width: 100%; height: 740px; position: relative; border-radius: 20px;
             background: radial-gradient(circle at 50% 40%, #ffffff 0%, #f1f5f9 65%, #e2e8f0 100%);
             border: 2px solid var(--border-color); overflow: hidden; display: flex; align-items: center; justify-content: center;
             perspective: 1200px;
@@ -196,7 +221,7 @@ async def handle_health_check(reader, writer):
         }
 
         .iso-map-viewport {
-            width: 1100px; height: 600px; position: relative;
+            width: 1100px; height: 620px; position: relative;
             transform: rotateX(42deg) rotateZ(-22deg) rotateY(8deg);
             transform-style: preserve-3d;
             transition: transform 0.15s ease-out;
@@ -221,9 +246,9 @@ async def handle_health_check(reader, writer):
             to { stroke-dashoffset: 0; }
         }
 
-        /* TRUE 3D EXTRUDED NODE CARDS */
+        /* TRUE 3D EXTRUDED NODE CARDS WITH ASSET IMAGES */
         .iso-node {
-            position: absolute; width: 155px; height: 135px; padding: 14px; border-radius: 18px;
+            position: absolute; width: 160px; height: 145px; padding: 12px; border-radius: 20px;
             background: #ffffff; border: 2px solid #cbd5e1;
             transform-style: preserve-3d;
             box-shadow: var(--shadow-3d);
@@ -232,7 +257,7 @@ async def handle_health_check(reader, writer):
         }
 
         .iso-node:hover {
-            transform: translateZ(40px) scale(1.12);
+            transform: translateZ(45px) scale(1.12);
             border-color: var(--cyan-path);
             box-shadow: var(--shadow-hover);
             z-index: 100;
@@ -243,22 +268,22 @@ async def handle_health_check(reader, writer):
             width: 28px; height: 28px; border-radius: 50%; font-size: 11px; font-weight: 800;
             display: flex; align-items: center; justify-content: center; color: #ffffff;
             border: 2px solid #ffffff; box-shadow: 0 4px 10px rgba(0,0,0,0.25);
-            transform: translateZ(30px);
+            transform: translateZ(35px);
         }
 
         .badge-pink { background: var(--pink-path); }
         .badge-green { background: var(--green-path); }
         .badge-purple { background: var(--purple-path); }
 
-        .node-icon-box {
-            width: 44px; height: 44px; border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            margin-bottom: 8px; transform: translateZ(25px);
-            background: #f8fafc; border: 1px solid #e2e8f0;
+        .node-asset-img {
+            width: 52px; height: 52px; object-fit: contain;
+            margin-bottom: 6px; transform: translateZ(30px);
+            filter: drop-shadow(0 6px 12px rgba(0,0,0,0.15));
+            transition: transform 0.3s ease;
         }
 
-        .node-icon-box svg {
-            width: 22px; height: 22px; fill: currentColor;
+        .iso-node:hover .node-asset-img {
+            transform: translateZ(50px) scale(1.15);
         }
 
         .node-title {
@@ -267,7 +292,7 @@ async def handle_health_check(reader, writer):
         }
 
         .node-sub {
-            font-size: 10px; color: var(--text-muted); margin-top: 4px; font-weight: 600;
+            font-size: 10px; color: var(--text-muted); margin-top: 3px; font-weight: 600;
             transform: translateZ(15px);
         }
 
@@ -334,22 +359,18 @@ async def handle_health_check(reader, writer):
         <nav class="navbar">
             <div class="brand">
                 <div class="brand-icon">
-                    <svg viewBox="0 0 24 24" width="24" height="24" fill="#ffffff">
-                        <path d="M19.589 6.686a4.793 4.793 0 0 1-3.77-4.245V2h-3.445v13.672a2.896 2.896 0 0 1-2.89 2.883 2.897 2.897 0 0 1-2.893-2.895 2.897 2.897 0 0 1 2.893-2.894c.338 0 .66.056.963.155V9.418a6.347 6.347 0 0 0-.963-.075c-3.524 0-6.38 2.856-6.38 6.38 0 3.523 2.856 6.38 6.38 6.38 3.523 0 6.38-2.857 6.38-6.38V9.123a8.163 8.163 0 0 0 4.745 1.503V7.181a4.82 4.82 0 0 1-1.023-.495z"/>
-                    </svg>
+                    <img src="/asset/merchandising.png" style="width: 28px; height: 28px; object-fit: contain;">
                 </div>
                 <div class="brand-text">
                     <h1>ScrollSaver 3D Process Map</h1>
-                    <p>Isometric System Workflow Architecture & Downloader Pipeline</p>
+                    <p>Isometric Workflow Diagram with Interactive Assets</p>
                 </div>
             </div>
             <div class="nav-controls">
                 <button class="view-btn active" id="btn-view-map" onclick="switchView('map')">
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
                     3D Process Map
                 </button>
                 <button class="view-btn" id="btn-view-terminal" onclick="switchView('terminal')">
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8h16v10zM6 10l4 4-4 4h3l4-4-4-4H6z"/></svg>
                     Terminal Stream
                 </button>
             </div>
@@ -362,8 +383,8 @@ async def handle_health_check(reader, writer):
                     <h3>Uptime</h3>
                     <div class="metric-value" id="stat-uptime">0s</div>
                 </div>
-                <div class="metric-icon" style="color: var(--cyan-path);">
-                    <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+                <div class="metric-icon">
+                    <img src="/asset/10.png" style="width: 28px; height: 28px; object-fit: contain;">
                 </div>
             </div>
             <div class="metric-card">
@@ -371,8 +392,8 @@ async def handle_health_check(reader, writer):
                     <h3>Total Requests</h3>
                     <div class="metric-value" id="stat-logs">0</div>
                 </div>
-                <div class="metric-icon" style="color: var(--pink-path);">
-                    <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M11 21h-1l1-7H7.5c-.58 0-.57-.32-.38-.66.19-.34.05-.08.07-.12C8.48 10.94 10.42 7.54 13 3h1l-1 7h3.5c.49 0 .56.33.47.51l-.07.15C14.96 14.54 13.02 17.94 11 21z"/></svg>
+                <div class="metric-icon">
+                    <img src="/asset/9.png" style="width: 28px; height: 28px; object-fit: contain;">
                 </div>
             </div>
             <div class="metric-card">
@@ -380,8 +401,8 @@ async def handle_health_check(reader, writer):
                     <h3>Cache Hits</h3>
                     <div class="metric-value" id="stat-cache">0</div>
                 </div>
-                <div class="metric-icon" style="color: var(--green-path);">
-                    <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 3C7.58 3 4 4.79 4 7v10c0 2.21 3.58 4 8 4s8-1.79 8-4V7c0-2.21-3.58-4-8-4zm0 2c3.87 0 6 1.3 6 2s-2.13 2-6 2-6-1.3-6-2 2.13-2 6-2zm0 14c-3.87 0-6-1.3-6-2v-2.22c1.47.78 3.61 1.22 6 1.22s4.53-.44 6-1.22V17c0 .7-2.13 2-6 2z"/></svg>
+                <div class="metric-icon">
+                    <img src="/asset/11a.png" style="width: 28px; height: 28px; object-fit: contain;">
                 </div>
             </div>
             <div class="metric-card">
@@ -389,8 +410,8 @@ async def handle_health_check(reader, writer):
                     <h3>Active Engines</h3>
                     <div class="metric-value">3 / 3</div>
                 </div>
-                <div class="metric-icon" style="color: var(--purple-path);">
-                    <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 10h2v7H7zm4-3h2v10h-2zm4 6h2v4h-2z"/></svg>
+                <div class="metric-icon">
+                    <img src="/asset/receiving.png" style="width: 28px; height: 28px; object-fit: contain;">
                 </div>
             </div>
         </div>
@@ -399,8 +420,8 @@ async def handle_health_check(reader, writer):
         <div class="main-section">
             <div class="section-header">
                 <div class="section-title">
-                    <svg viewBox="0 0 24 24" width="22" height="22" fill="var(--cyan-path)"><path d="M19 15v4H5v-4H3v4c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-4h-2zM11 5v8.17l-2.59-2.58L7 12l5 5 5-5-1.41-1.41L13 13.17V5h-2z"/></svg>
-                    <span id="workspace-title">Interactive 3D Process Map & Pipeline</span>
+                    <img src="/asset/11b.png" style="width: 26px; height: 26px; object-fit: contain; vertical-align: middle;">
+                    <span id="workspace-title">Interactive 3D Process Map & Asset Pipeline</span>
                 </div>
                 <div class="legend-bar" id="map-legend">
                     <div class="legend-item"><span class="legend-dot dot-pink"></span> Telegram User Flow</div>
@@ -427,13 +448,11 @@ async def handle_health_check(reader, writer):
                         <path class="path-purple animated-dash" d="M 495 115 L 305 505 L 495 505 L 685 505 L 875 505 L 875 315" />
                     </svg>
 
-                    <!-- ISOMETRIC 3D EXTRUDED NODES -->
+                    <!-- ISOMETRIC 3D EXTRUDED NODES WITH ASSET IMAGES -->
                     <!-- 1. Telegram Link Request -->
                     <div class="iso-node" style="top: 50px; left: 40px;" onclick="inspectNode('1')">
                         <span class="node-badge badge-pink">1</span>
-                        <div class="node-icon-box" style="color: var(--pink-path);">
-                            <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-                        </div>
+                        <img src="/asset/images.jpg" class="node-asset-img" alt="Request">
                         <div class="node-title">Link Request</div>
                         <div class="node-sub">@thescrollsaver_bot</div>
                     </div>
@@ -441,9 +460,7 @@ async def handle_health_check(reader, writer):
                     <!-- 2. Auth & Registration -->
                     <div class="iso-node" style="top: 50px; left: 230px;" onclick="inspectNode('2')">
                         <span class="node-badge badge-pink">2</span>
-                        <div class="node-icon-box" style="color: var(--pink-path);">
-                            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
-                        </div>
+                        <img src="/asset/merchandising.png" class="node-asset-img" alt="Auth">
                         <div class="node-title">Auth Check</div>
                         <div class="node-sub">users table register</div>
                     </div>
@@ -451,9 +468,7 @@ async def handle_health_check(reader, writer):
                     <!-- 3. URL Router -->
                     <div class="iso-node" style="top: 50px; left: 420px;" onclick="inspectNode('3')">
                         <span class="node-badge badge-pink">3</span>
-                        <div class="node-icon-box" style="color: var(--pink-path);">
-                            <svg viewBox="0 0 24 24"><path d="M17 7h-4v2h4c1.65 0 3 1.35 3 3s-1.35 3-3 3h-4v2h4c2.76 0 5-2.24 5-5s-2.24-5-5-5zm-6 8H7c-1.65 0-3-1.35-3-3s1.35-3 3-3h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-2zm-3-4h8v2H8z"/></svg>
-                        </div>
+                        <img src="/asset/receiving.png" class="node-asset-img" alt="Router">
                         <div class="node-title">URL Router</div>
                         <div class="node-sub">Validate TikTok URL</div>
                     </div>
@@ -461,9 +476,7 @@ async def handle_health_check(reader, writer):
                     <!-- 4. Database Cache Search -->
                     <div class="iso-node" style="top: 250px; left: 420px;" onclick="inspectNode('CACHE_LOOKUP')">
                         <span class="node-badge badge-green">A</span>
-                        <div class="node-icon-box" style="color: var(--green-path);">
-                            <svg viewBox="0 0 24 24"><path d="M12 3C7.58 3 4 4.79 4 7v10c0 2.21 3.58 4 8 4s8-1.79 8-4V7c0-2.21-3.58-4-8-4zm0 2c3.87 0 6 1.3 6 2s-2.13 2-6 2-6-1.3-6-2 2.13-2 6-2z"/></svg>
-                        </div>
+                        <img src="/asset/9.png" class="node-asset-img" alt="Cache">
                         <div class="node-title">Cache Search</div>
                         <div class="node-sub">SELECT video_id</div>
                     </div>
@@ -471,9 +484,7 @@ async def handle_health_check(reader, writer):
                     <!-- 5. Cache Hit Fast Send -->
                     <div class="iso-node" style="top: 250px; left: 610px;" onclick="inspectNode('CACHE_HIT')">
                         <span class="node-badge badge-green">B</span>
-                        <div class="node-icon-box" style="color: var(--green-path);">
-                            <svg viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
-                        </div>
+                        <img src="/asset/10.png" class="node-asset-img" alt="Fast Hit">
                         <div class="node-title">Cache Hit (0.05s)</div>
                         <div class="node-sub">send_cached_media</div>
                     </div>
@@ -481,9 +492,7 @@ async def handle_health_check(reader, writer):
                     <!-- 6. Done & Clean -->
                     <div class="iso-node" style="top: 250px; left: 800px;" onclick="inspectNode('NOTIFY')">
                         <span class="node-badge badge-green">5</span>
-                        <div class="node-icon-box" style="color: var(--green-path);">
-                            <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-                        </div>
+                        <img src="/asset/11a.png" class="node-asset-img" alt="Done">
                         <div class="node-title">Done & Clean</div>
                         <div class="node-sub">Delete status msg</div>
                     </div>
@@ -491,9 +500,7 @@ async def handle_health_check(reader, writer):
                     <!-- 7. TikWM API -->
                     <div class="iso-node" style="top: 440px; left: 230px;" onclick="inspectNode('TIKWM')">
                         <span class="node-badge badge-purple">7A</span>
-                        <div class="node-icon-box" style="color: var(--purple-path);">
-                            <svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
-                        </div>
+                        <img src="/asset/11b.png" class="node-asset-img" alt="TikWM">
                         <div class="node-title">TikWM API</div>
                         <div class="node-sub">Primary Extractor</div>
                     </div>
@@ -501,9 +508,7 @@ async def handle_health_check(reader, writer):
                     <!-- 8. Page Rehydration Scraper -->
                     <div class="iso-node" style="top: 440px; left: 420px;" onclick="inspectNode('SCRAPER')">
                         <span class="node-badge badge-purple">7B</span>
-                        <div class="node-icon-box" style="color: var(--purple-path);">
-                            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
-                        </div>
+                        <img src="/asset/9.png" class="node-asset-img" alt="Scraper">
                         <div class="node-title">Page Rehydration</div>
                         <div class="node-sub">SIGI_STATE scraper</div>
                     </div>
@@ -511,9 +516,7 @@ async def handle_health_check(reader, writer):
                     <!-- 9. Musicaldown Engine -->
                     <div class="iso-node" style="top: 440px; left: 610px;" onclick="inspectNode('MUSICALDOWN')">
                         <span class="node-badge badge-purple">7C</span>
-                        <div class="node-icon-box" style="color: var(--purple-path);">
-                            <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
-                        </div>
+                        <img src="/asset/10.png" class="node-asset-img" alt="Musicaldown">
                         <div class="node-title">Musicaldown</div>
                         <div class="node-sub">Secondary Fallback</div>
                     </div>
@@ -521,9 +524,7 @@ async def handle_health_check(reader, writer):
                     <!-- 10. Bot Dispatcher -->
                     <div class="iso-node" style="top: 440px; left: 800px;" onclick="inspectNode('DISPATCH')">
                         <span class="node-badge badge-purple">4</span>
-                        <div class="node-icon-box" style="color: var(--purple-path);">
-                            <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
-                        </div>
+                        <img src="/asset/receiving.png" class="node-asset-img" alt="Dispatcher">
                         <div class="node-title">Bot Dispatcher</div>
                         <div class="node-sub">send_video / photo</div>
                     </div>
@@ -651,7 +652,7 @@ async def handle_health_check(reader, writer):
                 document.getElementById('view-terminal-wrapper').style.display = 'none';
                 document.getElementById('btn-view-map').classList.add('active');
                 document.getElementById('btn-view-terminal').classList.remove('active');
-                document.getElementById('workspace-title').innerText = 'Interactive 3D Process Map & Pipeline';
+                document.getElementById('workspace-title').innerText = 'Interactive 3D Process Map & Asset Pipeline';
             } else {
                 document.getElementById('view-map-wrapper').style.display = 'none';
                 document.getElementById('view-terminal-wrapper').style.display = 'flex';
@@ -720,13 +721,13 @@ async def handle_health_check(reader, writer):
     </script>
 </body>
 </html>"""
-            body = html_content.encode("utf-8")
-            header = (
-                "HTTP/1.1 200 OK\r\n"
-                "Content-Type: text/html; charset=utf-8\r\n"
-                f"Content-Length: {len(body)}\r\n\r\n"
-            ).encode("utf-8")
-            writer.write(header + body)
+        body = html_content.encode("utf-8")
+        header = (
+            "HTTP/1.1 200 OK\r\n"
+            "Content-Type: text/html; charset=utf-8\r\n"
+            f"Content-Length: {len(body)}\r\n\r\n"
+        ).encode("utf-8")
+        writer.write(header + body)
         await writer.drain()
     except Exception as e:
         pass
