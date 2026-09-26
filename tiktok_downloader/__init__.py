@@ -1,2 +1,3 @@
-from .musicaldown import musicaldown
-from .get_content import get_content
+from services.downloader import get_content, musicaldown
+
+__all__ = ["get_content", "musicaldown"]

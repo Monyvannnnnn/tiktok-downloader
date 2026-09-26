@@ -1,1 +1,3 @@
-from .get_video_detail import get_video_detail
+from services.downloader import get_video_detail
+
+__all__ = ["get_video_detail"]
