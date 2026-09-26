@@ -1,10 +1,27 @@
 import json
 import time
+import base64
 import asyncio
 from config import PORT, BASE_DIR
 from services.logger import recent_logs, log_activity
 
 START_TIME = time.time()
+
+
+def get_assets_map():
+    assets = {}
+    asset_dir = BASE_DIR.joinpath("asset")
+    if asset_dir.exists():
+        for f in asset_dir.glob("*"):
+            if f.is_file():
+                ext = f.suffix.lower()
+                mime = "image/png" if ext == ".png" else "image/jpeg"
+                try:
+                    b64 = base64.b64encode(f.read_bytes()).decode("utf-8")
+                    assets[f.name] = f"data:{mime};base64,{b64}"
+                except Exception:
+                    pass
+    return assets
 
 
 async def handle_health_check(reader, writer):
@@ -56,25 +73,35 @@ async def handle_health_check(reader, writer):
 
         elif "/asset/" in req_str:
             try:
-                filename = req_str.split("/asset/")[1].split(" ")[0].split("?")[0]
-                asset_path = BASE_DIR.joinpath("asset", filename)
-                if asset_path.exists() and asset_path.is_file():
-                    content_type = "image/png" if filename.lower().endswith(".png") else "image/jpeg"
-                    with open(asset_path, "rb") as f:
-                        body = f.read()
-                    header = (
-                        "HTTP/1.1 200 OK\r\n"
-                        f"Content-Type: {content_type}\r\n"
-                        "Access-Control-Allow-Origin: *\r\n"
-                        f"Content-Length: {len(body)}\r\n\r\n"
-                    ).encode("utf-8")
-                    writer.write(header + body)
-                    await writer.drain()
-                    return
-            except Exception as ex:
+                parts = req_str.split("/asset/")
+                if len(parts) > 1:
+                    filename = parts[1].split(" ")[0].split("?")[0].strip()
+                    asset_file = BASE_DIR.joinpath("asset", filename)
+                    if asset_file.exists() and asset_file.is_file():
+                        mime = "image/png" if filename.lower().endswith(".png") else "image/jpeg"
+                        body = asset_file.read_bytes()
+                        header = (
+                            "HTTP/1.1 200 OK\r\n"
+                            f"Content-Type: {mime}\r\n"
+                            "Access-Control-Allow-Origin: *\r\n"
+                            f"Content-Length: {len(body)}\r\n\r\n"
+                        ).encode("utf-8")
+                        writer.write(header + body)
+                        await writer.drain()
+                        return
+            except Exception:
                 pass
 
-        html_content = """<!DOCTYPE html>
+        assets = get_assets_map()
+        img_merch = assets.get("merchandising.png", "/asset/merchandising.png")
+        img_10 = assets.get("10.png", "/asset/10.png")
+        img_9 = assets.get("9.png", "/asset/9.png")
+        img_11a = assets.get("11a.png", "/asset/11a.png")
+        img_11b = assets.get("11b.png", "/asset/11b.png")
+        img_recv = assets.get("receiving.png", "/asset/receiving.png")
+        img_req = assets.get("images.jpg", "/asset/images.jpg")
+
+        html_template = """<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -181,7 +208,7 @@ async def handle_health_check(reader, writer):
 
         .metric-info h3 { font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
         .metric-value { font-family: 'Outfit', sans-serif; font-size: 26px; font-weight: 800; color: var(--text-main); }
-        .metric-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: #f8fafc; border: 1.5px solid var(--border-color); }
+        .metric-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: #f8fafc; border: 1.5px solid var(--border-color); overflow: hidden; }
 
         /* Main Workspace Container */
         .main-section {
@@ -296,6 +323,10 @@ async def handle_health_check(reader, writer):
             transform: translateZ(15px);
         }
 
+        .fallback-svg {
+            width: 32px; height: 32px; fill: var(--purple-path); display: none; margin-bottom: 6px; transform: translateZ(30px);
+        }
+
         /* Terminal Stream View */
         .terminal-container {
             display: none; height: 600px; flex-direction: column; background: #ffffff;
@@ -359,11 +390,11 @@ async def handle_health_check(reader, writer):
         <nav class="navbar">
             <div class="brand">
                 <div class="brand-icon">
-                    <img src="/asset/merchandising.png" style="width: 28px; height: 28px; object-fit: contain;">
+                    <img src="__IMG_MERCH__" style="width: 32px; height: 32px; object-fit: contain;">
                 </div>
                 <div class="brand-text">
                     <h1>ScrollSaver 3D Process Map</h1>
-                    <p>Isometric Workflow Diagram with Interactive Assets</p>
+                    <p>Isometric Workflow Diagram with Asset Images</p>
                 </div>
             </div>
             <div class="nav-controls">
@@ -384,7 +415,7 @@ async def handle_health_check(reader, writer):
                     <div class="metric-value" id="stat-uptime">0s</div>
                 </div>
                 <div class="metric-icon">
-                    <img src="/asset/10.png" style="width: 28px; height: 28px; object-fit: contain;">
+                    <img src="__IMG_10__" style="width: 32px; height: 32px; object-fit: contain;">
                 </div>
             </div>
             <div class="metric-card">
@@ -393,7 +424,7 @@ async def handle_health_check(reader, writer):
                     <div class="metric-value" id="stat-logs">0</div>
                 </div>
                 <div class="metric-icon">
-                    <img src="/asset/9.png" style="width: 28px; height: 28px; object-fit: contain;">
+                    <img src="__IMG_9__" style="width: 32px; height: 32px; object-fit: contain;">
                 </div>
             </div>
             <div class="metric-card">
@@ -402,7 +433,7 @@ async def handle_health_check(reader, writer):
                     <div class="metric-value" id="stat-cache">0</div>
                 </div>
                 <div class="metric-icon">
-                    <img src="/asset/11a.png" style="width: 28px; height: 28px; object-fit: contain;">
+                    <img src="__IMG_11A__" style="width: 32px; height: 32px; object-fit: contain;">
                 </div>
             </div>
             <div class="metric-card">
@@ -411,7 +442,7 @@ async def handle_health_check(reader, writer):
                     <div class="metric-value">3 / 3</div>
                 </div>
                 <div class="metric-icon">
-                    <img src="/asset/receiving.png" style="width: 28px; height: 28px; object-fit: contain;">
+                    <img src="__IMG_RECV__" style="width: 32px; height: 32px; object-fit: contain;">
                 </div>
             </div>
         </div>
@@ -420,7 +451,7 @@ async def handle_health_check(reader, writer):
         <div class="main-section">
             <div class="section-header">
                 <div class="section-title">
-                    <img src="/asset/11b.png" style="width: 26px; height: 26px; object-fit: contain; vertical-align: middle;">
+                    <img src="__IMG_11B__" style="width: 28px; height: 28px; object-fit: contain; vertical-align: middle;">
                     <span id="workspace-title">Interactive 3D Process Map & Asset Pipeline</span>
                 </div>
                 <div class="legend-bar" id="map-legend">
@@ -448,11 +479,12 @@ async def handle_health_check(reader, writer):
                         <path class="path-purple animated-dash" d="M 495 115 L 305 505 L 495 505 L 685 505 L 875 505 L 875 315" />
                     </svg>
 
-                    <!-- ISOMETRIC 3D EXTRUDED NODES WITH ASSET IMAGES -->
+                    <!-- ISOMETRIC 3D EXTRUDED NODES WITH EMBEDDED BASE64 ASSET IMAGES -->
                     <!-- 1. Telegram Link Request -->
                     <div class="iso-node" style="top: 50px; left: 40px;" onclick="inspectNode('1')">
                         <span class="node-badge badge-pink">1</span>
-                        <img src="/asset/images.jpg" class="node-asset-img" alt="Request">
+                        <img src="__IMG_REQ__" class="node-asset-img" alt="Request" onerror="handleImgError(this)">
+                        <svg class="fallback-svg" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
                         <div class="node-title">Link Request</div>
                         <div class="node-sub">@thescrollsaver_bot</div>
                     </div>
@@ -460,7 +492,8 @@ async def handle_health_check(reader, writer):
                     <!-- 2. Auth & Registration -->
                     <div class="iso-node" style="top: 50px; left: 230px;" onclick="inspectNode('2')">
                         <span class="node-badge badge-pink">2</span>
-                        <img src="/asset/merchandising.png" class="node-asset-img" alt="Auth">
+                        <img src="__IMG_MERCH__" class="node-asset-img" alt="Auth" onerror="handleImgError(this)">
+                        <svg class="fallback-svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
                         <div class="node-title">Auth Check</div>
                         <div class="node-sub">users table register</div>
                     </div>
@@ -468,7 +501,8 @@ async def handle_health_check(reader, writer):
                     <!-- 3. URL Router -->
                     <div class="iso-node" style="top: 50px; left: 420px;" onclick="inspectNode('3')">
                         <span class="node-badge badge-pink">3</span>
-                        <img src="/asset/receiving.png" class="node-asset-img" alt="Router">
+                        <img src="__IMG_RECV__" class="node-asset-img" alt="Router" onerror="handleImgError(this)">
+                        <svg class="fallback-svg" viewBox="0 0 24 24"><path d="M17 7h-4v2h4c1.65 0 3 1.35 3 3s-1.35 3-3 3h-4v2h4c2.76 0 5-2.24 5-5s-2.24-5-5-5zm-6 8H7c-1.65 0-3-1.35-3-3s1.35-3 3-3h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-2zm-3-4h8v2H8z"/></svg>
                         <div class="node-title">URL Router</div>
                         <div class="node-sub">Validate TikTok URL</div>
                     </div>
@@ -476,7 +510,8 @@ async def handle_health_check(reader, writer):
                     <!-- 4. Database Cache Search -->
                     <div class="iso-node" style="top: 250px; left: 420px;" onclick="inspectNode('CACHE_LOOKUP')">
                         <span class="node-badge badge-green">A</span>
-                        <img src="/asset/9.png" class="node-asset-img" alt="Cache">
+                        <img src="__IMG_9__" class="node-asset-img" alt="Cache" onerror="handleImgError(this)">
+                        <svg class="fallback-svg" viewBox="0 0 24 24"><path d="M12 3C7.58 3 4 4.79 4 7v10c0 2.21 3.58 4 8 4s8-1.79 8-4V7c0-2.21-3.58-4-8-4zm0 2c3.87 0 6 1.3 6 2s-2.13 2-6 2-6-1.3-6-2 2.13-2 6-2z"/></svg>
                         <div class="node-title">Cache Search</div>
                         <div class="node-sub">SELECT video_id</div>
                     </div>
@@ -484,7 +519,8 @@ async def handle_health_check(reader, writer):
                     <!-- 5. Cache Hit Fast Send -->
                     <div class="iso-node" style="top: 250px; left: 610px;" onclick="inspectNode('CACHE_HIT')">
                         <span class="node-badge badge-green">B</span>
-                        <img src="/asset/10.png" class="node-asset-img" alt="Fast Hit">
+                        <img src="__IMG_10__" class="node-asset-img" alt="Fast Hit" onerror="handleImgError(this)">
+                        <svg class="fallback-svg" viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
                         <div class="node-title">Cache Hit (0.05s)</div>
                         <div class="node-sub">send_cached_media</div>
                     </div>
@@ -492,7 +528,8 @@ async def handle_health_check(reader, writer):
                     <!-- 6. Done & Clean -->
                     <div class="iso-node" style="top: 250px; left: 800px;" onclick="inspectNode('NOTIFY')">
                         <span class="node-badge badge-green">5</span>
-                        <img src="/asset/11a.png" class="node-asset-img" alt="Done">
+                        <img src="__IMG_11A__" class="node-asset-img" alt="Done" onerror="handleImgError(this)">
+                        <svg class="fallback-svg" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
                         <div class="node-title">Done & Clean</div>
                         <div class="node-sub">Delete status msg</div>
                     </div>
@@ -500,7 +537,8 @@ async def handle_health_check(reader, writer):
                     <!-- 7. TikWM API -->
                     <div class="iso-node" style="top: 440px; left: 230px;" onclick="inspectNode('TIKWM')">
                         <span class="node-badge badge-purple">7A</span>
-                        <img src="/asset/11b.png" class="node-asset-img" alt="TikWM">
+                        <img src="__IMG_11B__" class="node-asset-img" alt="TikWM" onerror="handleImgError(this)">
+                        <svg class="fallback-svg" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
                         <div class="node-title">TikWM API</div>
                         <div class="node-sub">Primary Extractor</div>
                     </div>
@@ -508,7 +546,8 @@ async def handle_health_check(reader, writer):
                     <!-- 8. Page Rehydration Scraper -->
                     <div class="iso-node" style="top: 440px; left: 420px;" onclick="inspectNode('SCRAPER')">
                         <span class="node-badge badge-purple">7B</span>
-                        <img src="/asset/9.png" class="node-asset-img" alt="Scraper">
+                        <img src="__IMG_9__" class="node-asset-img" alt="Scraper" onerror="handleImgError(this)">
+                        <svg class="fallback-svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
                         <div class="node-title">Page Rehydration</div>
                         <div class="node-sub">SIGI_STATE scraper</div>
                     </div>
@@ -516,7 +555,8 @@ async def handle_health_check(reader, writer):
                     <!-- 9. Musicaldown Engine -->
                     <div class="iso-node" style="top: 440px; left: 610px;" onclick="inspectNode('MUSICALDOWN')">
                         <span class="node-badge badge-purple">7C</span>
-                        <img src="/asset/10.png" class="node-asset-img" alt="Musicaldown">
+                        <img src="__IMG_10__" class="node-asset-img" alt="Musicaldown" onerror="handleImgError(this)">
+                        <svg class="fallback-svg" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
                         <div class="node-title">Musicaldown</div>
                         <div class="node-sub">Secondary Fallback</div>
                     </div>
@@ -524,7 +564,8 @@ async def handle_health_check(reader, writer):
                     <!-- 10. Bot Dispatcher -->
                     <div class="iso-node" style="top: 440px; left: 800px;" onclick="inspectNode('DISPATCH')">
                         <span class="node-badge badge-purple">4</span>
-                        <img src="/asset/receiving.png" class="node-asset-img" alt="Dispatcher">
+                        <img src="__IMG_RECV__" class="node-asset-img" alt="Dispatcher" onerror="handleImgError(this)">
+                        <svg class="fallback-svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
                         <div class="node-title">Bot Dispatcher</div>
                         <div class="node-sub">send_video / photo</div>
                     </div>
@@ -560,6 +601,14 @@ async def handle_health_check(reader, writer):
     </div>
 
     <script>
+        function handleImgError(imgEl) {
+            imgEl.style.display = 'none';
+            const nextSvg = imgEl.nextElementSibling;
+            if (nextSvg && nextSvg.classList.contains('fallback-svg')) {
+                nextSvg.style.display = 'block';
+            }
+        }
+
         // 3D Mouse Parallax Effect
         const wrapper = document.getElementById('view-map-wrapper');
         const viewport = document.getElementById('iso-viewport');
@@ -720,8 +769,9 @@ async def handle_health_check(reader, writer):
         setInterval(fetchData, 2000);
     </script>
 </body>
-</html>"""
-        body = html_content.encode("utf-8")
+</html>""".replace("__IMG_MERCH__", img_merch).replace("__IMG_10__", img_10).replace("__IMG_9__", img_9).replace("__IMG_11A__", img_11a).replace("__IMG_11B__", img_11b).replace("__IMG_RECV__", img_recv).replace("__IMG_REQ__", img_req)
+
+        body = html_template.encode("utf-8")
         header = (
             "HTTP/1.1 200 OK\r\n"
             "Content-Type: text/html; charset=utf-8\r\n"
