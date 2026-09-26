@@ -54,22 +54,20 @@ async def handle_health_check(reader, writer):
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ScrollSaver - TikTok Downloader Workflow & Terminal Dashboard</title>
+    <title>ScrollSaver - Isometric Process Map & Workflow Dashboard</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --bg-dark: #080b11;
-            --bg-card: rgba(22, 27, 34, 0.75);
-            --border-glow: rgba(0, 242, 234, 0.25);
-            --border-color: #21262d;
-            --cyan-accent: #00f2fe;
-            --pink-accent: #ff0050;
-            --purple-accent: #7928ca;
-            --green-success: #3fb950;
-            --orange-warn: #d29922;
+            --bg-dark: #07090e;
+            --bg-card: rgba(18, 24, 38, 0.85);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --pink-path: #ff2a6d;
+            --green-path: #05ffa1;
+            --purple-path: #9d4edf;
+            --cyan-path: #00f2fe;
             --text-main: #f0f6fc;
             --text-muted: #8b949e;
         }
@@ -80,9 +78,9 @@ async def handle_health_check(reader, writer):
             font-family: 'Inter', -apple-system, sans-serif;
             background-color: var(--bg-dark);
             background-image: 
-                radial-gradient(at 10% 20%, rgba(121, 40, 202, 0.15) 0px, transparent 50%),
-                radial-gradient(at 90% 80%, rgba(0, 242, 254, 0.12) 0px, transparent 50%),
-                radial-gradient(at 50% 50%, rgba(255, 0, 80, 0.08) 0px, transparent 50%);
+                radial-gradient(at 15% 15%, rgba(157, 78, 223, 0.12) 0px, transparent 40%),
+                radial-gradient(at 85% 85%, rgba(5, 255, 161, 0.08) 0px, transparent 40%),
+                radial-gradient(at 50% 50%, rgba(255, 42, 109, 0.08) 0px, transparent 50%);
             background-attachment: fixed;
             color: var(--text-main);
             min-height: 100vh;
@@ -90,398 +88,247 @@ async def handle_health_check(reader, writer):
         }
 
         .dashboard-container {
-            max-width: 1280px;
+            max-width: 1440px;
             margin: 0 auto;
             display: flex;
             flex-direction: column;
             gap: 24px;
         }
 
-        /* Header Navigation */
+        /* Top Bar */
         .navbar {
             display: flex;
             align-items: center;
             justify-content: space-between;
             background: var(--bg-card);
             backdrop-filter: blur(16px);
-            border: 1px solid var(--border-glow);
-            padding: 18px 28px;
+            border: 1px solid var(--border-color);
+            padding: 16px 28px;
             border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-
+        .brand { display: flex; align-items: center; gap: 14px; }
         .brand-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, var(--pink-accent), var(--cyan-accent));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-            color: #fff;
-            box-shadow: 0 0 20px rgba(0, 242, 254, 0.4);
+            width: 44px; height: 44px; border-radius: 12px;
+            background: linear-gradient(135deg, var(--pink-path), var(--purple-path));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px; color: #fff; box-shadow: 0 0 20px rgba(255, 42, 109, 0.4);
         }
 
         .brand-text h1 {
-            font-family: 'Outfit', sans-serif;
-            font-size: 22px;
-            font-weight: 800;
-            background: linear-gradient(90deg, #fff, var(--cyan-accent));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            letter-spacing: -0.5px;
+            font-family: 'Outfit', sans-serif; font-size: 22px; font-weight: 800;
+            background: linear-gradient(90deg, #fff, var(--cyan-path));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
 
-        .brand-text p {
-            font-size: 12px;
-            color: var(--text-muted);
+        .brand-text p { font-size: 12px; color: var(--text-muted); }
+
+        .nav-controls { display: flex; align-items: center; gap: 16px; }
+
+        .view-btn {
+            background: rgba(255,255,255,0.06); border: 1px solid var(--border-color);
+            color: var(--text-main); padding: 8px 16px; border-radius: 10px;
+            font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;
+            transition: all 0.2s ease;
         }
 
-        .nav-status {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .status-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(63, 185, 80, 0.12);
-            color: var(--green-success);
-            border: 1px solid rgba(63, 185, 80, 0.3);
-            padding: 8px 16px;
-            border-radius: 30px;
-            font-size: 13px;
-            font-weight: 600;
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            background: var(--green-success);
-            border-radius: 50%;
-            box-shadow: 0 0 10px var(--green-success);
-            animation: pulse-glow 2s infinite;
-        }
-
-        @keyframes pulse-glow {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.4; transform: scale(0.85); }
+        .view-btn.active, .view-btn:hover {
+            background: rgba(0, 242, 254, 0.15); border-color: var(--cyan-path); color: var(--cyan-path);
         }
 
         /* Metrics Bar */
         .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 16px;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;
         }
 
         .metric-card {
-            background: var(--bg-card);
-            backdrop-filter: blur(12px);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            transition: transform 0.2s ease, border-color 0.2s ease;
+            background: var(--bg-card); backdrop-filter: blur(12px); border: 1px solid var(--border-color);
+            border-radius: 16px; padding: 18px 22px; display: flex; align-items: center; justify-content: space-between;
         }
 
-        .metric-card:hover {
-            transform: translateY(-3px);
-            border-color: var(--cyan-accent);
-        }
+        .metric-info h3 { font-size: 12px; font-weight: 500; color: var(--text-muted); margin-bottom: 4px; }
+        .metric-value { font-family: 'Outfit', sans-serif; font-size: 24px; font-weight: 700; color: #fff; }
+        .metric-icon { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; background: rgba(255,255,255,0.04); }
 
-        .metric-info h3 {
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--text-muted);
-            margin-bottom: 6px;
-        }
-
-        .metric-value {
-            font-family: 'Outfit', sans-serif;
-            font-size: 26px;
-            font-weight: 700;
-            color: #fff;
-        }
-
-        .metric-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--cyan-accent);
-        }
-
-        /* Workflow Visual Section */
-        .section-card {
-            background: var(--bg-card);
-            backdrop-filter: blur(16px);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+        /* Main Section Container */
+        .main-section {
+            background: var(--bg-card); backdrop-filter: blur(16px); border: 1px solid var(--border-color);
+            border-radius: 24px; padding: 24px; position: relative; overflow: hidden;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.4);
         }
 
         .section-header {
-            padding: 20px 26px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;
+            padding-bottom: 16px; border-bottom: 1px solid var(--border-color);
         }
 
         .section-title {
-            font-family: 'Outfit', sans-serif;
-            font-size: 18px;
-            font-weight: 700;
-            color: #fff;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 700; color: #fff;
+            display: flex; align-items: center; gap: 10px;
         }
 
-        .section-title i {
-            color: var(--cyan-accent);
+        /* Workflow Map Legend */
+        .legend-bar {
+            display: flex; align-items: center; gap: 20px; flex-wrap: wrap; font-size: 13px; font-weight: 600;
         }
 
-        /* Workflow Pipeline Flowchart */
-        .workflow-pipeline {
-            padding: 36px 26px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            position: relative;
+        .legend-item { display: flex; align-items: center; gap: 8px; }
+        .legend-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+        .dot-pink { background: var(--pink-path); box-shadow: 0 0 10px var(--pink-path); }
+        .dot-green { background: var(--green-path); box-shadow: 0 0 10px var(--green-path); }
+        .dot-purple { background: var(--purple-path); box-shadow: 0 0 10px var(--purple-path); }
+
+        /* ISOMETRIC CANVAS CONTAINER */
+        .iso-map-wrapper {
+            width: 100%; height: 680px; position: relative; border-radius: 16px;
+            background: radial-gradient(circle at center, rgba(16, 23, 38, 0.9), #05070a);
+            border: 1px solid rgba(255,255,255,0.05); overflow: hidden; display: flex; align-items: center; justify-content: center;
         }
 
-        .wf-step {
-            position: relative;
-            background: rgba(13, 17, 23, 0.8);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 22px 18px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            transition: all 0.3s ease;
+        .iso-map-viewport {
+            width: 1100px; height: 600px; position: relative;
+            transform: rotateX(24deg) rotateZ(-12deg);
+            transform-style: preserve-3d; transition: transform 0.5s ease;
         }
 
-        .wf-step:hover {
-            border-color: var(--cyan-accent);
-            box-shadow: 0 0 25px rgba(0, 242, 254, 0.15);
-            transform: translateY(-4px);
+        .iso-map-wrapper:hover .iso-map-viewport {
+            transform: rotateX(18deg) rotateZ(-8deg);
         }
 
-        .wf-step-number {
-            position: absolute;
-            top: -12px;
-            background: linear-gradient(135deg, var(--cyan-accent), var(--purple-accent));
-            color: #fff;
-            font-size: 11px;
-            font-weight: 800;
-            padding: 3px 10px;
-            border-radius: 12px;
+        /* SVG Paths */
+        .svg-canvas {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;
         }
 
-        .wf-icon-box {
-            width: 52px;
-            height: 52px;
-            border-radius: 14px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-            color: var(--cyan-accent);
-            margin: 10px 0 14px 0;
-            transition: all 0.3s ease;
+        .path-pink { stroke: var(--pink-path); stroke-width: 4; fill: none; stroke-linecap: round; filter: drop-shadow(0 0 8px var(--pink-path)); }
+        .path-green { stroke: var(--green-path); stroke-width: 4; fill: none; stroke-linecap: round; filter: drop-shadow(0 0 8px var(--green-path)); }
+        .path-purple { stroke: var(--purple-path); stroke-width: 4; fill: none; stroke-linecap: round; filter: drop-shadow(0 0 8px var(--purple-path)); }
+
+        .animated-dash {
+            stroke-dasharray: 12 12; animation: flow-dash 1.5s linear infinite;
         }
 
-        .wf-step:hover .wf-icon-box {
-            background: var(--cyan-accent);
-            color: #000;
-            box-shadow: 0 0 20px var(--cyan-accent);
+        @keyframes flow-dash {
+            from { stroke-dashoffset: 48; }
+            to { stroke-dashoffset: 0; }
         }
 
-        .wf-title {
-            font-family: 'Outfit', sans-serif;
-            font-size: 15px;
-            font-weight: 700;
-            color: #fff;
-            margin-bottom: 6px;
+        /* Nodes */
+        .iso-node {
+            position: absolute; width: 150px; padding: 12px; border-radius: 14px;
+            background: rgba(18, 24, 38, 0.92); border: 1px solid rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px); transform-style: preserve-3d;
+            box-shadow: 0 12px 24px rgba(0,0,0,0.6); cursor: pointer; transition: all 0.3s ease;
+            display: flex; flex-direction: column; align-items: center; text-align: center;
         }
 
-        .wf-desc {
-            font-size: 12px;
-            color: var(--text-muted);
-            line-height: 1.5;
+        .iso-node:hover {
+            transform: translateZ(20px) scale(1.08); border-color: var(--cyan-path);
+            box-shadow: 0 20px 40px rgba(0, 242, 254, 0.3); z-index: 50;
         }
 
-        /* Live Terminal Logs */
-        .terminal-controls {
-            display: flex;
-            align-items: center;
-            gap: 12px;
+        .node-badge {
+            width: 26px; height: 26px; border-radius: 50%; font-size: 11px; font-weight: 800;
+            display: flex; align-items: center; justify-content: center; color: #000; margin-bottom: 8px;
+            box-shadow: 0 0 12px currentColor;
         }
 
-        .search-box {
-            background: rgba(0,0,0,0.4);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 6px 12px;
-            color: #fff;
-            font-size: 13px;
-            outline: none;
-            width: 220px;
-            transition: border-color 0.2s;
+        .badge-pink { background: var(--pink-path); color: #fff; box-shadow: 0 0 12px var(--pink-path); }
+        .badge-green { background: var(--green-path); color: #000; box-shadow: 0 0 12px var(--green-path); }
+        .badge-purple { background: var(--purple-path); color: #fff; box-shadow: 0 0 12px var(--purple-path); }
+
+        .node-icon { font-size: 22px; color: #fff; margin-bottom: 6px; }
+        .node-title { font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 700; color: #fff; line-height: 1.2; }
+        .node-sub { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
+
+        /* Terminal View Container */
+        .terminal-container {
+            display: none; height: 600px; flex-direction: column; background: #06090e;
+            border-radius: 16px; border: 1px solid var(--border-color); overflow: hidden;
         }
 
-        .search-box:focus {
-            border-color: var(--cyan-accent);
-        }
-
-        .btn-action {
-            background: rgba(255,255,255,0.06);
-            border: 1px solid var(--border-color);
-            color: var(--text-main);
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 500;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s;
-        }
-
-        .btn-action:hover {
-            background: rgba(255,255,255,0.12);
-            color: #fff;
+        .terminal-header {
+            padding: 14px 20px; background: rgba(255,255,255,0.03); border-bottom: 1px solid var(--border-color);
+            display: flex; align-items: center; justify-content: space-between;
         }
 
         .terminal-window {
-            height: 480px;
-            overflow-y: auto;
-            background: #06090e;
-            font-family: 'Fira Code', monospace;
-            font-size: 13px;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
+            flex-grow: 1; overflow-y: auto; font-family: 'Fira Code', monospace; font-size: 13px;
+            padding: 16px; display: flex; flex-direction: column; gap: 6px;
         }
 
-        .log-row {
-            display: flex;
-            gap: 14px;
-            padding: 6px 10px;
-            border-radius: 6px;
-            border-bottom: 1px solid rgba(255,255,255,0.02);
-            line-height: 1.5;
-            word-break: break-all;
+        .log-row { display: flex; gap: 14px; padding: 6px 10px; border-radius: 6px; word-break: break-all; }
+        .log-row:hover { background: rgba(255,255,255,0.04); }
+        .log-ts { color: var(--text-muted); flex-shrink: 0; font-size: 12px; }
+        .log-msg { color: #e6edf3; }
+        .highlight-cache { color: var(--green-path); font-weight: 500; }
+        .highlight-error { color: #ff7b72; font-weight: 500; }
+        .highlight-download { color: var(--cyan-path); }
+
+        /* Modal Inspector */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 100;
         }
 
-        .log-row:hover {
-            background: rgba(255, 255, 255, 0.04);
+        .modal-card {
+            width: 540px; background: #0f141d; border: 1px solid var(--cyan-path); border-radius: 20px;
+            padding: 24px; box-shadow: 0 0 50px rgba(0, 242, 254, 0.25); display: flex; flex-direction: column; gap: 16px;
         }
 
-        .log-ts {
-            color: var(--text-muted);
-            flex-shrink: 0;
-            font-size: 12px;
+        .modal-header { display: flex; align-items: center; justify-content: space-between; }
+        .modal-title { font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 700; color: #fff; }
+        .modal-close { cursor: pointer; color: var(--text-muted); font-size: 18px; }
+        .modal-close:hover { color: #fff; }
+
+        .modal-code {
+            background: #06090e; padding: 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08);
+            font-family: 'Fira Code', monospace; font-size: 12px; color: var(--cyan-path); line-height: 1.6;
         }
 
-        .log-msg {
-            color: #e6edf3;
+        .search-box {
+            background: rgba(0,0,0,0.4); border: 1px solid var(--border-color); border-radius: 8px;
+            padding: 6px 12px; color: #fff; font-size: 13px; outline: none; width: 220px;
         }
 
-        .log-msg.highlight-cache {
-            color: #3fb950;
-            font-weight: 500;
-        }
-
-        .log-msg.highlight-error {
-            color: #ff7b72;
-            font-weight: 500;
-        }
-
-        .log-msg.highlight-download {
-            color: var(--cyan-accent);
-        }
-
-        .empty-logs {
-            text-align: center;
-            padding: 60px;
-            color: var(--text-muted);
-            font-size: 14px;
-        }
-
-        /* Footer */
-        .footer {
-            text-align: center;
-            padding: 16px;
-            font-size: 13px;
-            color: var(--text-muted);
-        }
-
-        .footer a {
-            color: var(--cyan-accent);
-            text-decoration: none;
-        }
-
-        @media (max-width: 768px) {
-            .navbar { flex-direction: column; align-items: flex-start; gap: 14px; }
-            .terminal-controls { width: 100%; flex-wrap: wrap; }
-            .search-box { width: 100%; }
+        @media (max-width: 900px) {
+            .iso-map-wrapper { height: 500px; }
+            .iso-map-viewport { transform: scale(0.65) rotateX(24deg) rotateZ(-12deg); }
         }
     </style>
 </head>
 <body>
     <div class="dashboard-container">
-        <!-- Navbar -->
+        <!-- Top Navigation -->
         <nav class="navbar">
             <div class="brand">
                 <div class="brand-icon">
                     <i class="fa-brands fa-tiktok"></i>
                 </div>
                 <div class="brand-text">
-                    <h1>ScrollSaver Dashboard</h1>
-                    <p>High-Performance Telegram TikTok Downloader Bot</p>
+                    <h1>ScrollSaver Process Map</h1>
+                    <p>Isometric System Workflow Architecture & Operations</p>
                 </div>
             </div>
-            <div class="nav-status">
-                <div class="status-pill">
-                    <span class="status-dot"></span>
-                    <span>Bot System Active</span>
-                </div>
+            <div class="nav-controls">
+                <button class="view-btn active" id="btn-view-map" onclick="switchView('map')">
+                    <i class="fa-solid fa-diagram-project"></i> Process Map
+                </button>
+                <button class="view-btn" id="btn-view-terminal" onclick="switchView('terminal')">
+                    <i class="fa-solid fa-terminal"></i> Terminal Logs
+                </button>
             </div>
         </nav>
 
-        <!-- Live Metrics Cards -->
+        <!-- Live Metrics Bar -->
         <div class="metrics-grid">
             <div class="metric-card">
                 <div class="metric-info">
-                    <h3>System Uptime</h3>
+                    <h3>Uptime</h3>
                     <div class="metric-value" id="stat-uptime">0s</div>
                 </div>
-                <div class="metric-icon" style="color: var(--cyan-accent);">
+                <div class="metric-icon" style="color: var(--cyan-path);">
                     <i class="fa-solid fa-clock"></i>
                 </div>
             </div>
@@ -490,7 +337,7 @@ async def handle_health_check(reader, writer):
                     <h3>Total Requests</h3>
                     <div class="metric-value" id="stat-logs">0</div>
                 </div>
-                <div class="metric-icon" style="color: var(--purple-accent);">
+                <div class="metric-icon" style="color: var(--pink-path);">
                     <i class="fa-solid fa-bolt"></i>
                 </div>
             </div>
@@ -499,118 +346,253 @@ async def handle_health_check(reader, writer):
                     <h3>Cache Hits</h3>
                     <div class="metric-value" id="stat-cache">0</div>
                 </div>
-                <div class="metric-icon" style="color: var(--green-success);">
+                <div class="metric-icon" style="color: var(--green-path);">
                     <i class="fa-solid fa-database"></i>
                 </div>
             </div>
             <div class="metric-card">
                 <div class="metric-info">
-                    <h3>Active Services</h3>
-                    <div class="metric-value">4 / 4</div>
+                    <h3>Active Engines</h3>
+                    <div class="metric-value">3 / 3</div>
                 </div>
-                <div class="metric-icon" style="color: var(--orange-warn);">
-                    <i class="fa-solid fa-server"></i>
+                <div class="metric-icon" style="color: var(--purple-path);">
+                    <i class="fa-solid fa-microchip"></i>
                 </div>
             </div>
         </div>
 
-        <!-- Workflow Visual Architecture -->
-        <div class="section-card">
+        <!-- Main Workspace -->
+        <div class="main-section">
             <div class="section-header">
                 <div class="section-title">
-                    <i class="fa-solid fa-diagram-project"></i>
-                    <span>System Workflow Architecture</span>
+                    <i class="fa-solid fa-route"></i>
+                    <span id="workspace-title">Interactive Process Workflow Diagram</span>
+                </div>
+                <div class="legend-bar" id="map-legend">
+                    <div class="legend-item"><span class="legend-dot dot-pink"></span> Telegram User Flow</div>
+                    <div class="legend-item"><span class="legend-dot dot-green"></span> Database Cache Fast-Path</div>
+                    <div class="legend-item"><span class="legend-dot dot-purple"></span> Scraping & Downloader Pipeline</div>
                 </div>
             </div>
-            <div class="workflow-pipeline">
-                <div class="wf-step">
-                    <span class="wf-step-number">STEP 01</span>
-                    <div class="wf-icon-box">
-                        <i class="fa-paper-plane"></i>
-                    </div>
-                    <div class="wf-title">User Telegram Link</div>
-                    <div class="wf-desc">User sends TikTok video or photo link to @thescrollsaver_bot</div>
-                </div>
 
-                <div class="wf-step">
-                    <span class="wf-step-number">STEP 02</span>
-                    <div class="wf-icon-box">
-                        <i class="fa-magnifying-glass"></i>
-                    </div>
-                    <div class="wf-title">Detail Extractor</div>
-                    <div class="wf-desc">Fast metadata lookup via TikWM API or direct TikTok rehydration scraping</div>
-                </div>
+            <!-- VIEW 1: ISOMETRIC PROCESS MAP -->
+            <div class="iso-map-wrapper" id="view-map-wrapper">
+                <div class="iso-map-viewport">
+                    <!-- SVG Connecting Paths -->
+                    <svg class="svg-canvas" viewBox="0 0 1100 600">
+                        <!-- Pink Path: User Request -> Auth -> Router -> Dispatch -->
+                        <path class="path-pink" d="M 80 120 L 260 120 L 440 120 L 980 120 L 980 480 L 800 480" />
+                        <path class="path-pink animated-dash" d="M 80 120 L 260 120 L 440 120 L 980 120 L 980 480 L 800 480" />
 
-                <div class="wf-step">
-                    <span class="wf-step-number">STEP 03</span>
-                    <div class="wf-icon-box">
-                        <i class="fa-database"></i>
-                    </div>
-                    <div class="wf-title">Database Cache</div>
-                    <div class="wf-desc">Check cached Telegram file_id in SQLite/MySQL for instant 0-second re-send</div>
-                </div>
+                        <!-- Green Path: Database Cache Loop -->
+                        <path class="path-green" d="M 440 120 L 440 280 L 620 280 L 800 280 L 800 480" />
+                        <path class="path-green animated-dash" d="M 440 120 L 440 280 L 620 280 L 800 280 L 800 480" />
 
-                <div class="wf-step">
-                    <span class="wf-step-number">STEP 04</span>
-                    <div class="wf-icon-box">
-                        <i class="fa-download"></i>
-                    </div>
-                    <div class="wf-title">Downloader Engine</div>
-                    <div class="wf-desc">Fetch no-watermark HD video stream, fallback to Musicaldown, or batch slideshow photos</div>
-                </div>
+                        <!-- Purple Path: Extraction & Downloader Services -->
+                        <path class="path-purple" d="M 440 120 L 260 480 L 440 480 L 620 480 L 800 480" />
+                        <path class="path-purple animated-dash" d="M 440 120 L 260 480 L 440 480 L 620 480 L 800 480" />
+                    </svg>
 
-                <div class="wf-step">
-                    <span class="wf-step-number">STEP 05</span>
-                    <div class="wf-icon-box">
-                        <i class="fa-share-from-square"></i>
+                    <!-- ISOMETRIC NODES -->
+                    <!-- 1. Telegram Link Request -->
+                    <div class="iso-node" style="top: 70px; left: 10px;" onclick="inspectNode('1')">
+                        <span class="node-badge badge-pink">1</span>
+                        <div class="node-icon" style="color: var(--pink-path);"><i class="fa-paper-plane"></i></div>
+                        <div class="node-title">Link Request</div>
+                        <div class="node-sub">@thescrollsaver_bot</div>
                     </div>
-                    <div class="wf-title">Telegram Dispatch</div>
-                    <div class="wf-desc">Send HD video / media group album to user with inline source video button</div>
+
+                    <!-- 2. Auth & Registration -->
+                    <div class="iso-node" style="top: 70px; left: 190px;" onclick="inspectNode('2')">
+                        <span class="node-badge badge-pink">2</span>
+                        <div class="node-icon" style="color: var(--pink-path);"><i class="fa-user-check"></i></div>
+                        <div class="node-title">Auth Check</div>
+                        <div class="node-sub">users table register</div>
+                    </div>
+
+                    <!-- 3. URL Router -->
+                    <div class="iso-node" style="top: 70px; left: 370px;" onclick="inspectNode('3')">
+                        <span class="node-badge badge-pink">3</span>
+                        <div class="node-icon" style="color: var(--pink-path);"><i class="fa-code-branch"></i></div>
+                        <div class="node-title">URL Router</div>
+                        <div class="node-sub">Validate TikTok URL</div>
+                    </div>
+
+                    <!-- 4. Database Cache Lookup -->
+                    <div class="iso-node" style="top: 230px; left: 370px;" onclick="inspectNode('CACHE_LOOKUP')">
+                        <span class="node-badge badge-green">A</span>
+                        <div class="node-icon" style="color: var(--green-path);"><i class="fa-database"></i></div>
+                        <div class="node-title">Cache Search</div>
+                        <div class="node-sub">SELECT video_id</div>
+                    </div>
+
+                    <!-- 5. Cache Hit Fast Send -->
+                    <div class="iso-node" style="top: 230px; left: 550px;" onclick="inspectNode('CACHE_HIT')">
+                        <span class="node-badge badge-green">B</span>
+                        <div class="node-icon" style="color: var(--green-path);"><i class="fa-bolt-lightning"></i></div>
+                        <div class="node-title">Cache Hit (0.05s)</div>
+                        <div class="node-sub">send_cached_media</div>
+                    </div>
+
+                    <!-- 6. TikWM API -->
+                    <div class="iso-node" style="top: 430px; left: 190px;" onclick="inspectNode('TIKWM')">
+                        <span class="node-badge badge-purple">7A</span>
+                        <div class="node-icon" style="color: var(--purple-path);"><i class="fa-cloud-arrow-down"></i></div>
+                        <div class="node-title">TikWM API</div>
+                        <div class="node-sub">Primary Extractor</div>
+                    </div>
+
+                    <!-- 7. Fallback Web Scraper -->
+                    <div class="iso-node" style="top: 430px; left: 370px;" onclick="inspectNode('SCRAPER')">
+                        <span class="node-badge badge-purple">7B</span>
+                        <div class="node-icon" style="color: var(--purple-path);"><i class="fa-globe"></i></div>
+                        <div class="node-title">Page Rehydration</div>
+                        <div class="node-sub">SIGI_STATE scraper</div>
+                    </div>
+
+                    <!-- 8. Musicaldown Engine -->
+                    <div class="iso-node" style="top: 430px; left: 550px;" onclick="inspectNode('MUSICALDOWN')">
+                        <span class="node-badge badge-purple">7C</span>
+                        <div class="node-icon" style="color: var(--purple-path);"><i class="fa-download"></i></div>
+                        <div class="node-title">Musicaldown</div>
+                        <div class="node-sub">Secondary Fallback</div>
+                    </div>
+
+                    <!-- 9. Telegram Dispatcher -->
+                    <div class="iso-node" style="top: 430px; left: 730px;" onclick="inspectNode('DISPATCH')">
+                        <span class="node-badge badge-pink">4</span>
+                        <div class="node-icon" style="color: var(--pink-path);"><i class="fa-share-from-square"></i></div>
+                        <div class="node-title">Bot Dispatcher</div>
+                        <div class="node-sub">send_video / photo</div>
+                    </div>
+
+                    <!-- 10. User Notification -->
+                    <div class="iso-node" style="top: 230px; left: 730px;" onclick="inspectNode('NOTIFY')">
+                        <span class="node-badge badge-pink">5</span>
+                        <div class="node-icon" style="color: var(--pink-path);"><i class="fa-circle-check"></i></div>
+                        <div class="node-title">Done & Clean</div>
+                        <div class="node-sub">Delete status msg</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 2: LIVE TERMINAL MONITOR -->
+            <div class="terminal-container" id="view-terminal-wrapper">
+                <div class="terminal-header">
+                    <div class="section-title"><i class="fa-solid fa-terminal"></i> Activity Stream</div>
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <input type="text" id="search-input" class="search-box" placeholder="Search logs...">
+                        <button class="view-btn" onclick="fetchData()"><i class="fa-solid fa-rotate-right"></i></button>
+                    </div>
+                </div>
+                <div class="terminal-window" id="terminal-body">
+                    <div class="empty-logs">Connecting to log stream...</div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Terminal Log Monitor -->
-        <div class="section-card">
-            <div class="section-header">
-                <div class="section-title">
-                    <i class="fa-solid fa-terminal"></i>
-                    <span>Live Activity Stream</span>
-                </div>
-                <div class="terminal-controls">
-                    <input type="text" id="search-input" class="search-box" placeholder="Search activity logs...">
-                    <button class="btn-action" onclick="fetchData()"><i class="fa-solid fa-rotate-right"></i> Refresh</button>
-                    <button class="btn-action" onclick="toggleAutoScroll()"><i class="fa-solid fa-lock" id="lock-icon"></i> Auto-Scroll: ON</button>
-                </div>
+    <!-- NODE INSPECTOR MODAL -->
+    <div class="modal-overlay" id="node-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title" id="modal-node-title">Node Specification</div>
+                <div class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></div>
             </div>
-            <div class="terminal-window" id="terminal-body">
-                <div class="empty-logs">Connecting to live log stream...</div>
-            </div>
-        </div>
-
-        <div class="footer">
-            Powered by <strong>@thescrollsaver_bot</strong> &bull; ScrollSaver Automation Server
+            <p style="font-size: 13px; color: var(--text-muted);" id="modal-node-desc">Step details...</p>
+            <div class="modal-code" id="modal-node-code"># Code implementation</div>
         </div>
     </div>
 
     <script>
-        let autoScroll = true;
-        let searchQuery = "";
+        const NODE_SPECS = {
+            '1': {
+                title: 'Step 1: Telegram Link Request',
+                desc: 'User sends a TikTok URL to @thescrollsaver_bot in Telegram chat.',
+                code: 'async def tiktok_handler(client, message):\n    tiktok_url = message.text\n    log_activity(f"{user.id} - {tiktok_url}")'
+            },
+            '2': {
+                title: 'Step 2: Auth & Registration Check',
+                desc: 'Verifies user existence in SQL database (`users` table) and auto-registers new users.',
+                code: 'async with databases.Database(DATABASE) as db:\n    result = await db.fetch_one("SELECT * FROM users WHERE user_id = :userid")\n    if not result:\n        await db.execute(users.insert(), values={...})'
+            },
+            '3': {
+                title: 'Step 3: URL Router',
+                desc: 'Validates TikTok URL format and routes to detail extraction pipeline.',
+                code: 'video_id, author_id, author_username, video_url, images, cookies = \\\n    await get_video_detail(tiktok_url)'
+            },
+            'CACHE_LOOKUP': {
+                title: 'Fast-Path: Database Cache Lookup',
+                desc: 'Queries `videos` table to see if `video_id` has previously been uploaded to Telegram servers.',
+                code: 'query = "SELECT * FROM videos WHERE video_id = :video_id AND author_id = :author_id"\nresult = await db.fetch_one(query=query, values=values)'
+            },
+            'CACHE_HIT': {
+                title: 'Fast-Path: Instant Cache Re-Send (0.05s)',
+                desc: 'Uses cached Telegram `file_id` to re-send media instantly without downloading video stream.',
+                code: 'await client.send_cached_media(\n    chat_id=userid,\n    file_id=result.file_id,\n    caption=retext\n)'
+            },
+            'TIKWM': {
+                title: 'Extraction 7A: TikWM API Lookup',
+                desc: 'Primary extractor requesting TikWM API for clean HD video URL and slideshow photo list.',
+                code: 'r = await ses.post("https://www.tikwm.com/api/", data={"url": url})\nres_json = r.json()\nvideo_url = res_json["data"]["play"]'
+            },
+            'SCRAPER': {
+                title: 'Extraction 7B: Page Rehydration Scraping',
+                desc: 'Direct HTTP scraper parsing JSON embedded tags (__UNIVERSAL_DATA_FOR_REHYDRATION__, SIGI_STATE).',
+                code: 'infotag = parser.find("script", id="__UNIVERSAL_DATA_FOR_REHYDRATION__")\nitem = json.loads(infotag.text)["__DEFAULT_SCOPE__"]["webapp.video-detail"]'
+            },
+            'MUSICALDOWN': {
+                title: 'Extraction 7C: Musicaldown Fallback Engine',
+                desc: 'Backup downloader simulating user session on musicaldown.com to extract video stream.',
+                code: 'res = await ses.post("https://musicaldown.com/download", data=data)\nurlVideo = parsing.find("a", class_="download").get("href")'
+            },
+            'DISPATCH': {
+                title: 'Step 4: Telegram Media Dispatcher',
+                desc: 'Sends downloaded HD MP4 video or photo media group to user chat.',
+                code: 'result = await client.send_video(chat_id=userid, video=str(output), caption=retext)\n# Save file_id to database for caching'
+            },
+            'NOTIFY': {
+                title: 'Step 5: Completion & Cleanup',
+                desc: 'Deletes status notification message and unlinks temporary video/photo files from disk.',
+                code: 'await status_msg.delete()\noutput.unlink(missing_ok=True)'
+            }
+        };
 
-        document.getElementById('search-input').addEventListener('input', (e) => {
-            searchQuery = e.target.value.toLowerCase();
-            renderLogs();
-        });
+        function inspectNode(id) {
+            const spec = NODE_SPECS[id];
+            if (!spec) return;
+            document.getElementById('modal-node-title').innerText = spec.title;
+            document.getElementById('modal-node-desc').innerText = spec.desc;
+            document.getElementById('modal-node-code').innerText = spec.code;
+            document.getElementById('node-modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('node-modal').style.display = 'none';
+        }
+
+        function switchView(view) {
+            if (view === 'map') {
+                document.getElementById('view-map-wrapper').style.display = 'flex';
+                document.getElementById('view-terminal-wrapper').style.display = 'none';
+                document.getElementById('btn-view-map').classList.add('active');
+                document.getElementById('btn-view-terminal').classList.remove('active');
+                document.getElementById('workspace-title').innerText = 'Interactive Process Workflow Diagram';
+            } else {
+                document.getElementById('view-map-wrapper').style.display = 'none';
+                document.getElementById('view-terminal-wrapper').style.display = 'flex';
+                document.getElementById('btn-view-map').classList.remove('active');
+                document.getElementById('btn-view-terminal').classList.add('active');
+                document.getElementById('workspace-title').innerText = 'Real-Time Activity Terminal Stream';
+            }
+        }
 
         let cachedLogs = [];
 
-        function formatUptime(seconds) {
-            const h = Math.floor(seconds / 3600);
-            const m = Math.floor((seconds % 3600) / 60);
-            const s = seconds % 60;
-            if (h > 0) return `${h}h ${m}m ${s}s`;
-            if (m > 0) return `${m}m ${s}s`;
-            return `${s}s`;
+        function formatUptime(sec) {
+            const m = Math.floor(sec / 60);
+            const s = sec % 60;
+            return m > 0 ? `${m}m ${s}s` : `${s}s`;
         }
 
         async function fetchStats() {
@@ -620,9 +602,7 @@ async def handle_health_check(reader, writer):
                 document.getElementById('stat-uptime').innerText = formatUptime(stats.uptime || 0);
                 document.getElementById('stat-logs').innerText = stats.total_logs || 0;
                 document.getElementById('stat-cache').innerText = stats.cache_hits || 0;
-            } catch (err) {
-                console.error("Stats fetch error:", err);
-            }
+            } catch (e) {}
         }
 
         async function fetchData() {
@@ -631,29 +611,17 @@ async def handle_health_check(reader, writer):
                 cachedLogs = await res.json();
                 renderLogs();
                 fetchStats();
-            } catch (err) {
-                console.error("Logs fetch error:", err);
-            }
+            } catch (e) {}
         }
 
         function renderLogs() {
             const container = document.getElementById('terminal-body');
             if (!cachedLogs || cachedLogs.length === 0) {
-                container.innerHTML = '<div class="empty-logs">No activity logged yet. Send a TikTok link in Telegram to start!</div>';
+                container.innerHTML = '<div class="empty-logs">No activity logged yet.</div>';
                 return;
             }
 
-            const filtered = cachedLogs.filter(item => {
-                if (!searchQuery) return true;
-                return item.text.toLowerCase().includes(searchQuery) || item.time.toLowerCase().includes(searchQuery);
-            });
-
-            if (filtered.length === 0) {
-                container.innerHTML = '<div class="empty-logs">No matching activity logs found for your search filter.</div>';
-                return;
-            }
-
-            container.innerHTML = filtered.map(item => {
+            container.innerHTML = cachedLogs.map(item => {
                 let text = escapeHtml(item.text);
                 let extraClass = "";
                 if (text.toLowerCase().includes("cache database")) extraClass = "highlight-cache";
@@ -667,23 +635,6 @@ async def handle_health_check(reader, writer):
                     </div>
                 `;
             }).join('');
-
-            if (autoScroll) {
-                container.scrollTop = 0;
-            }
-        }
-
-        function toggleAutoScroll() {
-            autoScroll = !autoScroll;
-            const btn = document.getElementById('lock-icon');
-            const btnParent = btn.parentElement;
-            if (autoScroll) {
-                btn.className = "fa-solid fa-lock";
-                btnParent.innerHTML = '<i class="fa-solid fa-lock" id="lock-icon"></i> Auto-Scroll: ON';
-            } else {
-                btn.className = "fa-solid fa-lock-open";
-                btnParent.innerHTML = '<i class="fa-solid fa-lock-open" id="lock-icon"></i> Auto-Scroll: OFF';
-            }
         }
 
         function escapeHtml(str) {
