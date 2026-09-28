@@ -273,21 +273,44 @@ async def handle_health_check(reader, writer):
             to { stroke-dashoffset: 0; }
         }
 
-        /* TRUE 3D EXTRUDED NODE CARDS WITH ASSET IMAGES */
+        /* 3D UPRIGHT STANDING BILLBOARD NODES (LIKE PEOPLE STANDING ON AN ISOMETRIC MAP) */
+        .iso-node-wrapper {
+            position: absolute;
+            transform-style: preserve-3d;
+        }
+
+        .iso-node-shadow {
+            position: absolute;
+            width: 140px; height: 50px;
+            left: 10px; top: 110px;
+            background: radial-gradient(ellipse at center, rgba(15, 23, 42, 0.45) 0%, rgba(15, 23, 42, 0) 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            transform: rotateX(0deg) translateZ(-5px);
+            transition: all 0.3s ease;
+        }
+
         .iso-node {
             position: absolute; width: 160px; height: 145px; padding: 12px; border-radius: 20px;
-            background: #ffffff; border: 2px solid #cbd5e1;
+            background: #ffffff; border: 2.5px solid #cbd5e1;
             transform-style: preserve-3d;
-            box-shadow: var(--shadow-3d);
-            cursor: pointer; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform-origin: bottom center;
+            /* Default billboard counter-transform facing camera upright */
+            transform: rotateY(-8deg) rotateZ(22deg) rotateX(-42deg) translateZ(30px);
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.22), -4px 6px 0px rgba(203, 213, 225, 0.8);
+            cursor: pointer; transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease, border-color 0.25s ease;
             display: flex; flex-direction: column; align-items: center; text-align: center; justify-content: center;
         }
 
         .iso-node:hover {
-            transform: translateZ(45px) scale(1.12);
             border-color: var(--cyan-path);
-            box-shadow: var(--shadow-hover);
+            box-shadow: 0 25px 45px rgba(2, 132, 199, 0.35), -6px 12px 0px rgba(2, 132, 199, 0.5);
             z-index: 100;
+        }
+
+        .iso-node-wrapper:hover .iso-node-shadow {
+            transform: scale(1.25) translateZ(-5px);
+            background: radial-gradient(ellipse at center, rgba(2, 132, 199, 0.5) 0%, rgba(2, 132, 199, 0) 75%);
         }
 
         .node-badge {
@@ -303,14 +326,14 @@ async def handle_health_check(reader, writer):
         .badge-purple { background: var(--purple-path); }
 
         .node-asset-img {
-            width: 52px; height: 52px; object-fit: contain;
-            margin-bottom: 6px; transform: translateZ(30px);
-            filter: drop-shadow(0 6px 12px rgba(0,0,0,0.15));
+            width: 54px; height: 54px; object-fit: contain;
+            margin-bottom: 6px; transform: translateZ(35px);
+            filter: drop-shadow(0 8px 14px rgba(0,0,0,0.22));
             transition: transform 0.3s ease;
         }
 
         .iso-node:hover .node-asset-img {
-            transform: translateZ(50px) scale(1.15);
+            transform: translateZ(55px) scale(1.18);
         }
 
         .node-title {
@@ -479,95 +502,125 @@ async def handle_health_check(reader, writer):
                         <path class="path-purple animated-dash" d="M 495 115 L 305 505 L 495 505 L 685 505 L 875 505 L 875 315" />
                     </svg>
 
-                    <!-- ISOMETRIC 3D EXTRUDED NODES WITH EMBEDDED BASE64 ASSET IMAGES -->
+                    <!-- ISOMETRIC 3D EXTRUDED NODES WITH STANDING 3D BILLBOARD EFFECT -->
                     <!-- 1. Telegram Link Request -->
-                    <div class="iso-node" style="top: 50px; left: 40px;" onclick="inspectNode('1')">
-                        <span class="node-badge badge-pink">1</span>
-                        <img src="__IMG_REQ__" class="node-asset-img" alt="Request" onerror="handleImgError(this)">
-                        <svg class="fallback-svg" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-                        <div class="node-title">Link Request</div>
-                        <div class="node-sub">@thescrollsaver_bot</div>
+                    <div class="iso-node-wrapper" style="top: 50px; left: 40px;">
+                        <div class="iso-node-shadow"></div>
+                        <div class="iso-node" onclick="inspectNode('1')">
+                            <span class="node-badge badge-pink">1</span>
+                            <img src="__IMG_REQ__" class="node-asset-img" alt="Request" onerror="handleImgError(this)">
+                            <svg class="fallback-svg" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                            <div class="node-title">Link Request</div>
+                            <div class="node-sub">@thescrollsaver_bot</div>
+                        </div>
                     </div>
 
                     <!-- 2. Auth & Registration -->
-                    <div class="iso-node" style="top: 50px; left: 230px;" onclick="inspectNode('2')">
-                        <span class="node-badge badge-pink">2</span>
-                        <img src="__IMG_MERCH__" class="node-asset-img" alt="Auth" onerror="handleImgError(this)">
-                        <svg class="fallback-svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
-                        <div class="node-title">Auth Check</div>
-                        <div class="node-sub">users table register</div>
+                    <div class="iso-node-wrapper" style="top: 50px; left: 230px;">
+                        <div class="iso-node-shadow"></div>
+                        <div class="iso-node" onclick="inspectNode('2')">
+                            <span class="node-badge badge-pink">2</span>
+                            <img src="__IMG_MERCH__" class="node-asset-img" alt="Auth" onerror="handleImgError(this)">
+                            <svg class="fallback-svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+                            <div class="node-title">Auth Check</div>
+                            <div class="node-sub">users table register</div>
+                        </div>
                     </div>
 
                     <!-- 3. URL Router -->
-                    <div class="iso-node" style="top: 50px; left: 420px;" onclick="inspectNode('3')">
-                        <span class="node-badge badge-pink">3</span>
-                        <img src="__IMG_RECV__" class="node-asset-img" alt="Router" onerror="handleImgError(this)">
-                        <svg class="fallback-svg" viewBox="0 0 24 24"><path d="M17 7h-4v2h4c1.65 0 3 1.35 3 3s-1.35 3-3 3h-4v2h4c2.76 0 5-2.24 5-5s-2.24-5-5-5zm-6 8H7c-1.65 0-3-1.35-3-3s1.35-3 3-3h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-2zm-3-4h8v2H8z"/></svg>
-                        <div class="node-title">URL Router</div>
-                        <div class="node-sub">Validate TikTok URL</div>
+                    <div class="iso-node-wrapper" style="top: 50px; left: 420px;">
+                        <div class="iso-node-shadow"></div>
+                        <div class="iso-node" onclick="inspectNode('3')">
+                            <span class="node-badge badge-pink">3</span>
+                            <img src="__IMG_RECV__" class="node-asset-img" alt="Router" onerror="handleImgError(this)">
+                            <svg class="fallback-svg" viewBox="0 0 24 24"><path d="M17 7h-4v2h4c1.65 0 3 1.35 3 3s-1.35 3-3 3h-4v2h4c2.76 0 5-2.24 5-5s-2.24-5-5-5zm-6 8H7c-1.65 0-3-1.35-3-3s1.35-3 3-3h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-2zm-3-4h8v2H8z"/></svg>
+                            <div class="node-title">URL Router</div>
+                            <div class="node-sub">Validate TikTok URL</div>
+                        </div>
                     </div>
 
                     <!-- 4. Database Cache Search -->
-                    <div class="iso-node" style="top: 250px; left: 420px;" onclick="inspectNode('CACHE_LOOKUP')">
-                        <span class="node-badge badge-green">A</span>
-                        <img src="__IMG_9__" class="node-asset-img" alt="Cache" onerror="handleImgError(this)">
-                        <svg class="fallback-svg" viewBox="0 0 24 24"><path d="M12 3C7.58 3 4 4.79 4 7v10c0 2.21 3.58 4 8 4s8-1.79 8-4V7c0-2.21-3.58-4-8-4zm0 2c3.87 0 6 1.3 6 2s-2.13 2-6 2-6-1.3-6-2 2.13-2 6-2z"/></svg>
-                        <div class="node-title">Cache Search</div>
-                        <div class="node-sub">SELECT video_id</div>
+                    <div class="iso-node-wrapper" style="top: 250px; left: 420px;">
+                        <div class="iso-node-shadow"></div>
+                        <div class="iso-node" onclick="inspectNode('CACHE_LOOKUP')">
+                            <span class="node-badge badge-green">A</span>
+                            <img src="__IMG_9__" class="node-asset-img" alt="Cache" onerror="handleImgError(this)">
+                            <svg class="fallback-svg" viewBox="0 0 24 24"><path d="M12 3C7.58 3 4 4.79 4 7v10c0 2.21 3.58 4 8 4s8-1.79 8-4V7c0-2.21-3.58-4-8-4zm0 2c3.87 0 6 1.3 6 2s-2.13 2-6 2-6-1.3-6-2 2.13-2 6-2z"/></svg>
+                            <div class="node-title">Cache Search</div>
+                            <div class="node-sub">SELECT video_id</div>
+                        </div>
                     </div>
 
                     <!-- 5. Cache Hit Fast Send -->
-                    <div class="iso-node" style="top: 250px; left: 610px;" onclick="inspectNode('CACHE_HIT')">
-                        <span class="node-badge badge-green">B</span>
-                        <img src="__IMG_10__" class="node-asset-img" alt="Fast Hit" onerror="handleImgError(this)">
-                        <svg class="fallback-svg" viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
-                        <div class="node-title">Cache Hit (0.05s)</div>
-                        <div class="node-sub">send_cached_media</div>
+                    <div class="iso-node-wrapper" style="top: 250px; left: 610px;">
+                        <div class="iso-node-shadow"></div>
+                        <div class="iso-node" onclick="inspectNode('CACHE_HIT')">
+                            <span class="node-badge badge-green">B</span>
+                            <img src="__IMG_10__" class="node-asset-img" alt="Fast Hit" onerror="handleImgError(this)">
+                            <svg class="fallback-svg" viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
+                            <div class="node-title">Cache Hit (0.05s)</div>
+                            <div class="node-sub">send_cached_media</div>
+                        </div>
                     </div>
 
                     <!-- 6. Done & Clean -->
-                    <div class="iso-node" style="top: 250px; left: 800px;" onclick="inspectNode('NOTIFY')">
-                        <span class="node-badge badge-green">5</span>
-                        <img src="__IMG_11A__" class="node-asset-img" alt="Done" onerror="handleImgError(this)">
-                        <svg class="fallback-svg" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-                        <div class="node-title">Done & Clean</div>
-                        <div class="node-sub">Delete status msg</div>
+                    <div class="iso-node-wrapper" style="top: 250px; left: 800px;">
+                        <div class="iso-node-shadow"></div>
+                        <div class="iso-node" onclick="inspectNode('NOTIFY')">
+                            <span class="node-badge badge-green">5</span>
+                            <img src="__IMG_11A__" class="node-asset-img" alt="Done" onerror="handleImgError(this)">
+                            <svg class="fallback-svg" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                            <div class="node-title">Done & Clean</div>
+                            <div class="node-sub">Delete status msg</div>
+                        </div>
                     </div>
 
                     <!-- 7. TikWM API -->
-                    <div class="iso-node" style="top: 440px; left: 230px;" onclick="inspectNode('TIKWM')">
-                        <span class="node-badge badge-purple">7A</span>
-                        <img src="__IMG_11B__" class="node-asset-img" alt="TikWM" onerror="handleImgError(this)">
-                        <svg class="fallback-svg" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
-                        <div class="node-title">TikWM API</div>
-                        <div class="node-sub">Primary Extractor</div>
+                    <div class="iso-node-wrapper" style="top: 440px; left: 230px;">
+                        <div class="iso-node-shadow"></div>
+                        <div class="iso-node" onclick="inspectNode('TIKWM')">
+                            <span class="node-badge badge-purple">7A</span>
+                            <img src="__IMG_11B__" class="node-asset-img" alt="TikWM" onerror="handleImgError(this)">
+                            <svg class="fallback-svg" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
+                            <div class="node-title">TikWM API</div>
+                            <div class="node-sub">Primary Extractor</div>
+                        </div>
                     </div>
 
                     <!-- 8. Page Rehydration Scraper -->
-                    <div class="iso-node" style="top: 440px; left: 420px;" onclick="inspectNode('SCRAPER')">
-                        <span class="node-badge badge-purple">7B</span>
-                        <img src="__IMG_9__" class="node-asset-img" alt="Scraper" onerror="handleImgError(this)">
-                        <svg class="fallback-svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
-                        <div class="node-title">Page Rehydration</div>
-                        <div class="node-sub">SIGI_STATE scraper</div>
+                    <div class="iso-node-wrapper" style="top: 440px; left: 420px;">
+                        <div class="iso-node-shadow"></div>
+                        <div class="iso-node" onclick="inspectNode('SCRAPER')">
+                            <span class="node-badge badge-purple">7B</span>
+                            <img src="__IMG_9__" class="node-asset-img" alt="Scraper" onerror="handleImgError(this)">
+                            <svg class="fallback-svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                            <div class="node-title">Page Rehydration</div>
+                            <div class="node-sub">SIGI_STATE scraper</div>
+                        </div>
                     </div>
 
                     <!-- 9. Musicaldown Engine -->
-                    <div class="iso-node" style="top: 440px; left: 610px;" onclick="inspectNode('MUSICALDOWN')">
-                        <span class="node-badge badge-purple">7C</span>
-                        <img src="__IMG_10__" class="node-asset-img" alt="Musicaldown" onerror="handleImgError(this)">
-                        <svg class="fallback-svg" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
-                        <div class="node-title">Musicaldown</div>
-                        <div class="node-sub">Secondary Fallback</div>
+                    <div class="iso-node-wrapper" style="top: 440px; left: 610px;">
+                        <div class="iso-node-shadow"></div>
+                        <div class="iso-node" onclick="inspectNode('MUSICALDOWN')">
+                            <span class="node-badge badge-purple">7C</span>
+                            <img src="__IMG_10__" class="node-asset-img" alt="Musicaldown" onerror="handleImgError(this)">
+                            <svg class="fallback-svg" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                            <div class="node-title">Musicaldown</div>
+                            <div class="node-sub">Secondary Fallback</div>
+                        </div>
                     </div>
 
                     <!-- 10. Bot Dispatcher -->
-                    <div class="iso-node" style="top: 440px; left: 800px;" onclick="inspectNode('DISPATCH')">
-                        <span class="node-badge badge-purple">4</span>
-                        <img src="__IMG_RECV__" class="node-asset-img" alt="Dispatcher" onerror="handleImgError(this)">
-                        <svg class="fallback-svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
-                        <div class="node-title">Bot Dispatcher</div>
-                        <div class="node-sub">send_video / photo</div>
+                    <div class="iso-node-wrapper" style="top: 440px; left: 800px;">
+                        <div class="iso-node-shadow"></div>
+                        <div class="iso-node" onclick="inspectNode('DISPATCH')">
+                            <span class="node-badge badge-purple">4</span>
+                            <img src="__IMG_RECV__" class="node-asset-img" alt="Dispatcher" onerror="handleImgError(this)">
+                            <svg class="fallback-svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
+                            <div class="node-title">Bot Dispatcher</div>
+                            <div class="node-sub">send_video / photo</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -609,9 +662,17 @@ async def handle_health_check(reader, writer):
             }
         }
 
-        // 3D Mouse Parallax Effect
+        // 3D Mouse Parallax Effect & Upright Standing Billboarding
         const wrapper = document.getElementById('view-map-wrapper');
         const viewport = document.getElementById('iso-viewport');
+        const nodes = document.querySelectorAll('.iso-node');
+
+        function updateBillboardTransforms(rotX, rotZ, rotY) {
+            nodes.forEach(node => {
+                // Counter-rotate each card/sprite relative to viewport pitch/yaw/roll so it stays standing vertically upright!
+                node.style.transform = `rotateY(${-rotY}deg) rotateZ(${-rotZ}deg) rotateX(${-rotX}deg) translateZ(30px)`;
+            });
+        }
 
         wrapper.addEventListener('mousemove', (e) => {
             const rect = wrapper.getBoundingClientRect();
@@ -623,11 +684,16 @@ async def handle_health_check(reader, writer):
             const rotY = 8 + (x * 10);
 
             viewport.style.transform = `rotateX(${rotX}deg) rotateZ(${rotZ}deg) rotateY(${rotY}deg)`;
+            updateBillboardTransforms(rotX, rotZ, rotY);
         });
 
         wrapper.addEventListener('mouseleave', () => {
             viewport.style.transform = 'rotateX(42deg) rotateZ(-22deg) rotateY(8deg)';
+            updateBillboardTransforms(42, -22, 8);
         });
+
+        // Initialize standing billboard orientation on load
+        updateBillboardTransforms(42, -22, 8);
 
         const NODE_SPECS = {
             '1': {
