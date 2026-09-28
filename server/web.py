@@ -92,6 +92,18 @@ async def handle_health_check(reader, writer):
             except Exception:
                 pass
 
+        index_html_path = BASE_DIR.joinpath("index.html")
+        if index_html_path.exists() and index_html_path.is_file():
+            body = index_html_path.read_bytes()
+            header = (
+                "HTTP/1.1 200 OK\r\n"
+                "Content-Type: text/html; charset=utf-8\r\n"
+                f"Content-Length: {len(body)}\r\n\r\n"
+            ).encode("utf-8")
+            writer.write(header + body)
+            await writer.drain()
+            return
+
         assets = get_assets_map()
         img_merch = assets.get("merchandising.png", "/asset/merchandising.png")
         img_10 = assets.get("10.png", "/asset/10.png")
