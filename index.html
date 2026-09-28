@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>Order-to-Delivery, Receiving & Payment Flow - 3D Isometric Process Map</title>
+    <title>ScrollSaver TikTok Downloader - Architecture & User Data Process Diagram</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -198,31 +198,13 @@
             transition: opacity 0.2s ease, transform 0.2s ease;
             box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
             z-index: 1000;
-            max-width: 280px;
+            max-width: 320px;
             white-space: normal;
         }
 
         .diagram-tooltip.visible {
             opacity: 1;
             transform: translate(-50%, -100%) translateY(-18px);
-        }
-
-        .tooltip-title {
-            font-weight: 700;
-            font-size: 14px;
-            margin-bottom: 4px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .tooltip-badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 10px;
-            font-weight: 800;
-            color: #ffffff;
         }
 
         @media (max-width: 768px) {
@@ -239,8 +221,8 @@
 <body>
     <header>
         <div class="header-title">
-            <h1>Order-to-Delivery, Receiving and Payment Flow</h1>
-            <p>Data-Driven 3D Isometric Process Diagram with Upright Standing Illustrations</p>
+            <h1>ScrollSaver TikTok Downloader - Architecture & User Data Pipeline</h1>
+            <p>Data-Driven 3D Isometric Workflow Map (User Registration, Database Caching & Multi-Engine Scraping)</p>
         </div>
         <div class="controls-group">
             <button class="btn-motion" id="btn-toggle-motion" aria-label="Pause or Play Animations" onclick="toggleMotion()">
@@ -252,12 +234,11 @@
 
     <!-- Legend Bar -->
     <div class="legend-container">
-        <div class="legend-item"><span class="legend-pill" style="background: var(--color-red);"></span> 1-8: Order to Delivery</div>
-        <div class="legend-item"><span class="legend-pill" style="background: var(--color-orange);"></span> 9-10: Load & Deliver Goods</div>
-        <div class="legend-item"><span class="legend-pill" style="background: var(--color-green);"></span> 11-12 & A-C: Payment & Settlement</div>
-        <div class="legend-item"><span class="legend-pill" style="background: var(--color-purple);"></span> A-D: Supplier Receiving & Put-away</div>
-        <div class="legend-item"><span class="legend-pill" style="background: var(--color-pink);"></span> M: Merchandising & Store Performance</div>
-        <div class="legend-item"><span class="legend-pill" style="background: var(--color-blue);"></span> Retail & Consumer Outlets</div>
+        <div class="legend-item"><span class="legend-pill" style="background: var(--color-red);"></span> Red: Telegram User Request & Link Validation</div>
+        <div class="legend-item"><span class="legend-pill" style="background: var(--color-pink);"></span> Pink: User Data & Database Registration</div>
+        <div class="legend-item"><span class="legend-pill" style="background: var(--color-green);"></span> Green: Database Cache Fast-Path (0.05s Re-Send)</div>
+        <div class="legend-item"><span class="legend-pill" style="background: var(--color-purple);"></span> Purple: Multi-Engine TikTok Extractor Pipeline</div>
+        <div class="legend-item"><span class="legend-pill" style="background: var(--color-blue);"></span> Blue: Server Analytics & Real-Time Log Monitoring</div>
     </div>
 
     <!-- Diagram Viewport -->
@@ -304,119 +285,86 @@
     </div>
 
     <script>
-        // DATA ARRAY DEFINITION FOR ROUTES, NODES, AND STANDING ASSETS
+        // DATA ARRAY DEFINITION FOR TIKTOK DOWNLOADER BOT PIPELINE & USER DATA
         const DIAGRAM_DATA = {
             origin: { ox: 900, oy: 380 },
             
             routes: [
                 {
                     id: "route-red",
-                    name: "Order to Delivery",
+                    name: "Telegram User Flow",
                     color: "#F0324B",
                     marker: "arrow-red",
-                    // Path in ground 2D coordinates
-                    pathD: "M 350 -250 L 250 -250 L 150 -250 L 50 -250 L -50 -250 L -150 -250 L -150 -100 L -150 50 L -150 160 M -150 50 L -70 110 M -150 50 L 10 60",
+                    pathD: "M 350 -250 L 200 -250 L 50 -250 L 400 60 L 550 60",
                     animated: true
                 },
                 {
-                    id: "route-blue-credit",
-                    name: "Credit Approval Link",
-                    color: "#0284C7",
-                    dashed: true,
-                    pathD: "M 150 -250 L 150 -150",
-                    animated: false
-                },
-                {
-                    id: "route-orange",
-                    name: "Load Inventory & Deliver",
-                    color: "#FF8C00",
-                    marker: "arrow-orange",
-                    pathD: "M -10 60 L 200 60 L 400 60",
-                    animated: true
-                },
-                {
-                    id: "route-green",
-                    name: "Payment & Settlement",
-                    color: "#6CC51E",
-                    marker: "arrow-green",
-                    pathD: "M 400 60 L 500 -100 L 350 -250 L 150 -250 L -50 -250 L -150 -250",
-                    animated: true
-                },
-                {
-                    id: "route-purple",
-                    name: "Supplier Receiving & Put-away",
-                    color: "#8A2BE2",
-                    marker: "arrow-purple",
-                    pathD: "M -350 -250 L -350 -100 L -350 50 L -350 200 L -150 200",
-                    animated: true
-                },
-                {
-                    id: "route-pink",
-                    name: "Merchandising & Store Performance",
+                    id: "route-pink-userdata",
+                    name: "User Data & Registration",
                     color: "#FF5C8A",
                     marker: "arrow-pink",
-                    pathD: "M 450 -20 Q 480 20 400 60",
+                    pathD: "M 200 -250 L 200 -120 L -50 -120",
                     animated: true
                 },
                 {
-                    id: "route-retail-blue",
-                    name: "Consumer & Retail Outlets",
+                    id: "route-green-cache",
+                    name: "Database Fast-Path Cache",
+                    color: "#6CC51E",
+                    marker: "arrow-green",
+                    pathD: "M 50 -250 L -50 -120 L 150 60 L 400 60",
+                    animated: true
+                },
+                {
+                    id: "route-purple-extract",
+                    name: "Multi-Engine TikTok Extractor",
+                    color: "#8A2BE2",
+                    marker: "arrow-purple",
+                    pathD: "M 50 -250 L -300 -250 L -300 -100 L -300 50 L -150 200 L 400 60",
+                    animated: true
+                },
+                {
+                    id: "route-blue-monitoring",
+                    name: "Server Activity & Log Monitor",
                     color: "#2563EB",
                     marker: "arrow-blue",
                     dashed: true,
-                    pathD: "M 400 60 Q 480 90 550 120 Q 620 135 680 150 Q 650 205 620 260",
+                    pathD: "M 400 60 Q 480 90 550 120 Q 620 135 680 150",
                     animated: true
                 }
             ],
 
             nodes: [
-                // Red Route 1-8
-                { id: "step-1", label: "1", title: "1. Register Sales Order", desc: "Sales representative registers sales order from buyer.", color: "#F0324B", routeId: "route-red", gx: 350, gy: -250 },
-                { id: "step-2", label: "2", title: "2. Approve by Sup/Regional", desc: "Supervisor, Regional & National approval process.", color: "#F0324B", routeId: "route-red", gx: 250, gy: -250 },
-                { id: "step-3", label: "3", title: "3. Sales Order Confirmed", desc: "Sales Admin verifies and confirms the sales order.", color: "#F0324B", routeId: "route-red", gx: 150, gy: -250 },
-                { id: "step-4", label: "4", title: "4. Assign Delivery", desc: "Logistics dispatcher assigns delivery route and truck.", color: "#F0324B", routeId: "route-red", gx: 50, gy: -250 },
-                { id: "step-5", label: "5", title: "5. Sum up Quantity", desc: "Consolidate product quantities for warehouse picking.", color: "#F0324B", routeId: "route-red", gx: -50, gy: -250 },
-                { id: "step-6", label: "6", title: "6. Picking", desc: "Forklift operators pick item boxes from warehouse shelves.", color: "#F0324B", routeId: "route-red", gx: -150, gy: -250 },
-                { id: "step-7", label: "7", title: "7. Inspecting", desc: "Quality inspection of picked goods before staging.", color: "#F0324B", routeId: "route-red", gx: -150, gy: -100 },
-                { id: "step-8", label: "8", title: "8. Loose Area", desc: "Staging loose area for document attachment.", color: "#F0324B", routeId: "route-red", gx: -150, gy: 50 },
-                
-                // Red 3-way branch
-                { id: "step-8a", label: "8A", title: "8A. Credit Note", desc: "Issue credit note documentation for adjustments.", color: "#F0324B", routeId: "route-red", gx: -150, gy: 160 },
-                { id: "step-8b", label: "8B", title: "8B. Pre-Invoice", desc: "Generate pre-invoice document for billing.", color: "#F0324B", routeId: "route-red", gx: -70, gy: 110 },
-                { id: "step-8c", label: "8C", title: "8C. Delivery Note", desc: "Print delivery note for transport confirmation.", color: "#F0324B", routeId: "route-red", gx: 10, gy: 60 },
+                // Red Route: Telegram Request & Link Handling
+                { id: "step-1", label: "1", title: "1. Telegram Link Request", desc: "User sends TikTok video/photo link to @thescrollsaver_bot in Telegram chat.", color: "#F0324B", routeId: "route-red", gx: 350, gy: -250 },
+                { id: "step-2", label: "2", title: "2. URL Validation & Router", desc: "Validate TikTok URL structure and extract unique video_id parameter.", color: "#F0324B", routeId: "route-red", gx: 50, gy: -250 },
+                { id: "step-4", label: "4", title: "4. Telegram Media Dispatcher", desc: "Send extracted HD MP4 video or photo album back to Telegram user.", color: "#F0324B", routeId: "route-red", gx: 400, gy: 60 },
+                { id: "step-5", label: "5", title: "5. Completion & Cleanup", desc: "Delete status loading message and unlink temporary downloaded files from disk.", color: "#F0324B", routeId: "route-red", gx: 550, gy: 60 },
 
-                // Orange Route 9-10
-                { id: "step-9", label: "9", title: "9. Load Inventory", desc: "Load confirmed inventory onto delivery truck.", color: "#FF8C00", routeId: "route-orange", gx: -10, gy: 60 },
-                { id: "step-10", label: "10", title: "10. Deliver the Goods", desc: "Transport and deliver goods to retail store.", color: "#FF8C00", routeId: "route-orange", gx: 200, gy: 60 },
+                // Pink Route: User Data & Auto-Registration
+                { id: "step-u1", label: "U1", title: "U1. User Identity Extraction", desc: "Extract user_id, username, first_name, and last_name from Telegram Message Object.", color: "#FF5C8A", routeId: "route-pink-userdata", gx: 200, gy: -250 },
+                { id: "step-u2", label: "U2. User SQL Database Sync", desc: "Query `users` table. If new user, INSERT profile record. If existing, UPDATE updated_at timestamp.", color: "#FF5C8A", routeId: "route-pink-userdata", gx: 200, gy: -120 },
+                { id: "step-u3", label: "U3. User Stats & Request Counter", desc: "Increment total_requests count for user analytics and rate limiting.", color: "#FF5C8A", routeId: "route-pink-userdata", gx: -50, gy: -120 },
 
-                // Green Route 11-12 & A-C
-                { id: "step-11", label: "11", title: "11. Collect Payment", desc: "Collect cash/digital payment from store upon delivery.", color: "#6CC51E", routeId: "route-green", gx: 500, gy: -100 },
-                { id: "step-12", label: "12", title: "12. Clearance & Settlement", desc: "Submit payment for financial clearance & settlement.", color: "#6CC51E", routeId: "route-green", gx: 400, gy: -200 },
-                { id: "step-green-a", label: "A", title: "A. Submit Payment", desc: "Submit payment slip to accounting system.", color: "#6CC51E", routeId: "route-green", gx: 350, gy: -250 },
-                { id: "step-green-b", label: "B", title: "B. Receive Payment", desc: "Finance office receives payment confirmation.", color: "#6CC51E", routeId: "route-green", gx: 150, gy: -250 },
-                { id: "step-green-c", label: "C", title: "C. Return Inventory Balance", desc: "Reconcile returned stock balance into inventory.", color: "#6CC51E", routeId: "route-green", gx: -50, gy: -250 },
+                // Green Route: Database Caching (Fast-Path 0.05s)
+                { id: "step-ca", label: "CA", title: "CA. Database Cache Search", desc: "Query `videos` table (`video_id` = :video_id) to check if media was previously saved.", color: "#6CC51E", routeId: "route-green-cache", gx: -50, gy: -120 },
+                { id: "step-cb", label: "CB. Fast-Path Hit (0.05s)", desc: "CACHE HIT! Re-send media instantly using stored Telegram file_id without re-downloading.", color: "#6CC51E", routeId: "route-green-cache", gx: 150, gy: 60 },
 
-                // Purple Route A-D
-                { id: "step-purp-a", label: "A", title: "A. Supplier Deliver Goods", desc: "Supplier truck arrives at warehouse receiving dock.", color: "#8A2BE2", routeId: "route-purple", gx: -350, gy: -250 },
-                { id: "step-purp-b", label: "B", title: "B. Receiving", desc: "Receive incoming supplier packages at receiving desk.", color: "#8A2BE2", routeId: "route-purple", gx: -350, gy: -100 },
-                { id: "step-purp-c", label: "C", title: "C. Inspection", desc: "Inspect inbound supplier goods with checklist.", color: "#8A2BE2", routeId: "route-purple", gx: -350, gy: 50 },
-                { id: "step-purp-d", label: "D", title: "D. Put-Away", desc: "Put away inspected items into warehouse racks.", color: "#8A2BE2", routeId: "route-purple", gx: -150, gy: 200 },
+                // Purple Route: Extraction Pipeline
+                { id: "step-7a", label: "7A", title: "7A. TikWM API Extractor", desc: "Primary Extractor requesting TikWM API for watermark-free HD MP4 URL and slideshow photo list.", color: "#8A2BE2", routeId: "route-purple-extract", gx: -300, gy: -250 },
+                { id: "step-7b", label: "7B", title: "7B. SIGI_STATE Scraper", desc: "Web HTML Scraper parsing embedded __UNIVERSAL_DATA_FOR_REHYDRATION__ and SIGI_STATE JSON tags.", color: "#8A2BE2", routeId: "route-purple-extract", gx: -300, gy: -100 },
+                { id: "step-7c", label: "7C", title: "7C. Musicaldown Fallback Engine", desc: "Secondary backup downloader simulating browser session on musicaldown.com.", color: "#8A2BE2", routeId: "route-purple-extract", gx: -300, gy: 50 },
+                { id: "step-7d", label: "7D", title: "7D. Cache File Persistence", desc: "Store Telegram file_id & file_unique_id into `videos` SQL table for future instant cache hits.", color: "#8A2BE2", routeId: "route-purple-extract", gx: -150, gy: 200 }
+            ],
 
-                // Pink M
-                { id: "step-m", label: "M", title: "M. Merchandising", desc: "Merchandising & perfect store execution audit.", color: "#FF5C8A", routeId: "route-pink", gx: 450, gy: -20 }
-            ],            standingAssets: [
-                { id: "credit-approval-phone", title: "Credit Approval", desc: "Credit verification and admin authorization.", img: "./asset/merchandising.png", gx: 150, gy: -150, width: 65, height: 65, fallbackType: "phone" },
-                { id: "forklift-picking", title: "Forklift Picking", desc: "Warehouse forklift picking items for shipment.", img: "./asset/10.png", gx: -150, gy: -250, width: 85, height: 75, fallbackType: "forklift" },
-                { id: "desk-inspection", title: "Inspector Desk", desc: "Quality inspection desk before staging.", img: "./asset/receiving.png", gx: -150, gy: -100, width: 75, height: 75, fallbackType: "desk" },
-                { id: "delivery-truck", title: "Delivery Truck", desc: "Loaded transport truck carrying goods to store.", img: "./asset/9.png", gx: -10, gy: 60, width: 95, height: 70, fallbackType: "truck" },
-                { id: "retail-store", title: "Supermarket Store", desc: "Retail store receiving delivery and selling to consumers.", img: "./asset/merchandising.png", gx: 400, gy: 60, width: 95, height: 85, fallbackType: "store" },
-                { id: "payment-cashier", title: "Payment Counter", desc: "Payment collection and invoice settlement.", img: "./asset/11a.png", gx: 500, gy: -100, width: 75, height: 75, fallbackType: "cashier" },
-                { id: "finance-desk", title: "Finance Desk", desc: "Finance office receiving payment documentation.", img: "./asset/11b.png", gx: 150, gy: -250, width: 75, height: 75, fallbackType: "desk" },
-                { id: "supplier-truck", title: "Supplier Delivery", desc: "Inbound supplier truck delivering new stock.", img: "./asset/images.jpg", gx: -350, gy: -250, width: 90, height: 65, fallbackType: "truck" },
-                { id: "warehouse-shelves", title: "Put-away Shelves", desc: "Warehouse storage racks for put-away inventory.", img: "./asset/11b.png", gx: -150, gy: 200, width: 75, height: 80, fallbackType: "shelves" },
-                { id: "consumer-person", title: "Consumer Outlet", desc: "End consumer purchasing items from retail location.", img: "./asset/10.png", gx: 550, gy: 120, width: 55, height: 70, fallbackType: "person" },
-                { id: "fuel-station", title: "Gasoline Station", desc: "Commercial fuel station outlet.", img: "./asset/9.png", gx: 680, gy: 150, width: 85, height: 80, fallbackType: "gas" },
-                { id: "burger-kiosk", title: "Fast Food Kiosk", desc: "Quick service food kiosk partner location.", img: "./asset/merchandising.png", gx: 620, gy: 260, width: 80, height: 75, fallbackType: "kiosk" }
+            standingAssets: [
+                { id: "user-phone", title: "Telegram User Mobile", desc: "User sending TikTok link to @thescrollsaver_bot in chat.", img: "./asset/merchandising.png", gx: 350, gy: -250, width: 75, height: 75 },
+                { id: "user-sql-db", title: "User Profile SQL Database", desc: "SQL `users` table storing user_id, username, first_name & activity timestamps.", img: "./asset/9.png", gx: 200, gy: -120, width: 85, height: 75 },
+                { id: "video-cache-db", title: "Video File Cache Storage", desc: "SQL `videos` table storing video_id, author_username & Telegram file_id.", img: "./asset/11b.png", gx: -50, gy: -120, width: 80, height: 75 },
+                { id: "fast-hit-lightning", title: "Instant Cache Re-Send", desc: "Fast-path delivery sending cached file_id in 0.05 seconds.", img: "./asset/10.png", gx: 150, gy: 60, width: 85, height: 75 },
+                { id: "tikwm-api-server", title: "TikWM API Service", desc: "HD Video & Photo Slideshow API extraction engine.", img: "./asset/11a.png", gx: -300, gy: -250, width: 80, height: 75 },
+                { id: "scraper-engine", title: "SIGI_STATE Scraper", desc: "Direct HTTP page rehydration HTML parser.", img: "./asset/receiving.png", gx: -300, gy: -100, width: 80, height: 75 },
+                { id: "telegram-bot-server", title: "Bot Dispatcher Server", desc: "Async Pyrogram/Hydrogram client sending media to Telegram users.", img: "./asset/images.jpg", gx: 400, gy: 60, width: 90, height: 70 },
+                { id: "server-logs-monitor", title: "Real-Time Log Stream", desc: "Live HTTP API endpoint /api/logs and /api/stats monitoring stream.", img: "./asset/merchandising.png", gx: 680, gy: 150, width: 80, height: 75 }
             ]
         };
 
@@ -556,7 +504,7 @@
                 // Outer Ring & Background Circle
                 const circleBg = document.createElementNS("http://www.w3.org/2000/svg", "circle");
                 circleBg.setAttribute("class", "node-bg");
-                circleBg.setAttribute("r", "15");
+                circleBg.setAttribute("r", "16");
                 circleBg.setAttribute("fill", "#ffffff");
                 circleBg.setAttribute("stroke", node.color);
                 circleBg.setAttribute("stroke-width", "3");
@@ -567,7 +515,7 @@
                 textEl.setAttribute("text-anchor", "middle");
                 textEl.setAttribute("dy", "4.5");
                 textEl.setAttribute("fill", node.color);
-                textEl.setAttribute("font-size", "11");
+                textEl.setAttribute("font-size", "10");
                 textEl.setAttribute("font-weight", "800");
                 textEl.textContent = node.label;
 
@@ -593,11 +541,11 @@
             const tag = title ? title.split('.')[0] : 'STEP';
 
             tooltipEl.innerHTML = `
-                <div class="tooltip-title">
-                    <span class="tooltip-badge" style="background: ${color}; color: #ffffff; padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 800;">${escapeHtml(tag)}</span>
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                    <span style="background: ${color}; color: #ffffff; padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 800;">${escapeHtml(tag)}</span>
                     <span style="font-weight: 700; color: #ffffff; font-size: 13px;">${escapeHtml(title)}</span>
                 </div>
-                <div style="color: #cbd5e1; font-size: 12px; line-height: 1.4; margin-top: 4px;">${escapeHtml(desc)}</div>
+                <div style="color: #cbd5e1; font-size: 12px; line-height: 1.4;">${escapeHtml(desc)}</div>
             `;
 
             tooltipEl.style.left = `${coords.x}px`;
