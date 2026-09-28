@@ -461,7 +461,8 @@
                 const gAsset = document.createElementNS("http://www.w3.org/2000/svg", "g");
                 gAsset.setAttribute("class", "standing-asset");
                 gAsset.setAttribute("transform", `translate(${sx}, ${sy})`);
-                gAsset.addEventListener("mouseenter", () => showTooltip(asset.title, asset.desc, "#0284C7", sx, sy));
+                gAsset.addEventListener("mouseenter", (e) => showTooltip(asset.title, asset.desc, "#0284C7", e.clientX, e.clientY));
+                gAsset.addEventListener("mousemove", (e) => updateTooltipPos(e.clientX, e.clientY));
                 gAsset.addEventListener("mouseleave", hideTooltip);
 
                 // Try PNG Asset image first, with SVG vector fallback
@@ -523,9 +524,13 @@
                 gNode.appendChild(textEl);
 
                 // Interactions: Hover & Focus
-                gNode.addEventListener("mouseenter", () => highlightNodeRoute(node, sx, sy));
+                gNode.addEventListener("mouseenter", (e) => highlightNodeRoute(node, e.clientX, e.clientY));
+                gNode.addEventListener("mousemove", (e) => updateTooltipPos(e.clientX, e.clientY));
                 gNode.addEventListener("mouseleave", resetNodeHighlight);
-                gNode.addEventListener("focus", () => highlightNodeRoute(node, sx, sy));
+                gNode.addEventListener("focus", (e) => {
+                    const rect = gNode.getBoundingClientRect();
+                    highlightNodeRoute(node, rect.left + rect.width / 2, rect.top);
+                });
                 gNode.addEventListener("blur", resetNodeHighlight);
 
                 nodesContainer.appendChild(gNode);
@@ -536,29 +541,42 @@
         const tooltipEl = document.getElementById("tooltip");
         const viewportEl = document.getElementById("viewport");
 
-        function showTooltip(title, desc, color, sx, sy) {
-            const coords = getScreenCoords(sx, sy);
-            const tag = title ? title.split('.')[0] : 'STEP';
+        function showTooltip(title, desc, color, clientX, clientY) {
+            if (!title) return;
+
+            const viewportRect = viewportEl.getBoundingClientRect();
+            const x = clientX - viewportRect.left;
+            const y = clientY - viewportRect.top;
+
+            const tag = title.includes('.') ? title.split('.')[0] : 'STEP';
 
             tooltipEl.innerHTML = `
                 <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
                     <span style="background: ${color}; color: #ffffff; padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 800;">${escapeHtml(tag)}</span>
                     <span style="font-weight: 700; color: #ffffff; font-size: 13px;">${escapeHtml(title)}</span>
                 </div>
-                <div style="color: #cbd5e1; font-size: 12px; line-height: 1.4;">${escapeHtml(desc)}</div>
+                <div style="color: #cbd5e1; font-size: 12px; line-height: 1.4;">${escapeHtml(desc || '')}</div>
             `;
 
-            tooltipEl.style.left = `${coords.x}px`;
-            tooltipEl.style.top = `${coords.y}px`;
+            tooltipEl.style.left = `${x}px`;
+            tooltipEl.style.top = `${y}px`;
             tooltipEl.classList.add("visible");
+        }
+
+        function updateTooltipPos(clientX, clientY) {
+            const viewportRect = viewportEl.getBoundingClientRect();
+            const x = clientX - viewportRect.left;
+            const y = clientY - viewportRect.top;
+            tooltipEl.style.left = `${x}px`;
+            tooltipEl.style.top = `${y}px`;
         }
 
         function hideTooltip() {
             tooltipEl.classList.remove("visible");
         }
 
-        function highlightNodeRoute(node, sx, sy) {
-            showTooltip(node.title, node.desc, node.color, sx, sy);
+        function highlightNodeRoute(node, clientX, clientY) {
+            showTooltip(node.title, node.desc, node.color, clientX, clientY);
             document.querySelectorAll(".route-path").forEach(path => {
                 if (path.id === node.routeId) {
                     path.classList.add("route-path-highlighted");
